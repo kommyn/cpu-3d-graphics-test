@@ -1,12 +1,29 @@
-using namespace MyGeo;
+using namespace e3Dg;
+
+///////////////////////////////////////////////////////
+// Constructors
+///////////////////////////////////////////////////////
 
 template <unsigned int M, unsigned int N>
 Matrix<M, N>::Matrix() {
-	std::cout << "Counstructor: " << this << std::endl;
 	for (int i = 0; i < M * N; ++i) {
 		m_values[i] = 0;
 	}
 }
+
+template <unsigned int M, unsigned int N>
+Matrix<M, N>::Matrix(const float& value) {
+	const unsigned int size = M * N;
+	for (int i = 0; i < size; ++i) {
+		m_values[i] = value;
+	}
+}
+
+
+
+///////////////////////////////////////////////////////
+// Methods
+///////////////////////////////////////////////////////
 
 template <unsigned int M, unsigned int N>
 void Matrix<M, N>::display() {
@@ -21,7 +38,6 @@ void Matrix<M, N>::display() {
 
 template <unsigned int M, unsigned int N>
 Matrix<M, N>& Matrix<M, N>::operator=(const Matrix<M, N>& mat) {
-	std::cout << "Copy assigment: " << this << std::endl;
 	int size = M * N;
 	for (int i = 0; i < size; ++i) {
 		this->m_values[i] = mat[i];
@@ -60,7 +76,7 @@ float& Matrix<M, N>::operator()(int&& mIndex, int&& nIndex) {
 }
 
 template <unsigned int M, unsigned int N>
-Matrix<M, N>& MyGeo::operator+(Matrix<M, N> A, const Matrix<M, N>& B) {
+Matrix<M, N>& e3Dg::operator+(Matrix<M, N> A, const Matrix<M, N>& B) {
 	int size = M * N;
 	for (int i = 0; i < size; ++i) {
 		A[i] += B[i];
@@ -69,7 +85,7 @@ Matrix<M, N>& MyGeo::operator+(Matrix<M, N> A, const Matrix<M, N>& B) {
 }
 
 template <unsigned int M, unsigned int N>
-Matrix<M, N>& MyGeo::operator-(Matrix<M, N> A, const Matrix<M, N>& B) {
+Matrix<M, N>& e3Dg::operator-(Matrix<M, N> A, const Matrix<M, N>& B) {
 	int size = M * N;
 	for (int i = 0; i < size; ++i) {
 		A[i] -= B[i];
@@ -78,7 +94,7 @@ Matrix<M, N>& MyGeo::operator-(Matrix<M, N> A, const Matrix<M, N>& B) {
 }
 
 template <unsigned int M, unsigned int N>
-Matrix<M, N>& MyGeo::operator*(Matrix<M, N> mat, const float& value) {
+Matrix<M, N>& e3Dg::operator*(Matrix<M, N> mat, const float& value) {
 	unsigned int size = M * N;
 	for (int i = 0; i < size; ++i) {
 		mat[i] *= value;
@@ -87,12 +103,23 @@ Matrix<M, N>& MyGeo::operator*(Matrix<M, N> mat, const float& value) {
 }
 
 template <unsigned int M, unsigned int N>
-Matrix<M, N>& MyGeo::operator*(const float& value, Matrix<M, N> mat) {
+Matrix<M, N>& e3Dg::operator*(const float& value, Matrix<M, N> mat) {
 	unsigned int size = M * N;
 	for (int i = 0; i < size; ++i) {
 		mat[i] *= value;
 	}
 	return mat;
+}
+
+template <unsigned int M, unsigned int N>
+Vector<N> e3Dg::operator*(const Vector<M>& vec, const Matrix<M, N>& mat) {
+	Vector<N> result;
+	for (int i = 0; i < M; ++i) {
+		for (int j = 0; j < N; ++j) {
+			result[j] += vec[i] * mat[i + M * j];
+		}
+	}
+	return result;
 }
 
 template <unsigned int M, unsigned int N>

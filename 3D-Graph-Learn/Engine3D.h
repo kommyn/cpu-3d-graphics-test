@@ -5,19 +5,15 @@
 #include "EngineWindows.h"
 #include "TexturesFactory.h"
 #include "Matrix.h"
+#include "GraphUtils.h"
+
+#ifndef M_PI
+#define M_PI       3.14159265358979323846
+#endif
 
 struct Polygon3Vert {
-	MyGeo::Vector3f coords[3];
-	MyGeo::Vector2f textCoords[3];
-};
-
-class Model3D {
-private:
-	unsigned int verticesNum;
-	MyGeo::Vector3f* vertices;
-	MyGeo::Vector3f* textureCoords;
-public:
-
+	e3Dg::Vector3f coords[3];
+	e3Dg::Vector2f textCoords[3];
 };
 
 class Engine3D : public EngineWindows
@@ -28,7 +24,7 @@ private:
 protected:
 	TexturesFactory m_texturesFact;
 	// TODO: Move camera logic to another class, this class should only has functionality of 3D pipeline usage
-	MyGeo::Vector3f m_lookTo;
+	e3Dg::Vector3f m_lookTo;
 public:
 	Engine3D();
 	~Engine3D() = default;
@@ -40,13 +36,132 @@ public:
 	void VertexPipe();
 
 	void OnDraw() override {
-		RGBAColor color = { 255, 0, 0, 255 };
+		/*RGBAColor color = { 255, 0, 0, 255 };
 		Pixel a = { 100, 150, { 255, 0, 0, 255 } };
 		Pixel b = { 100, 125, { 0, 255, 0, 255 } };
 		Pixel c = { 200, 200, { 0, 0, 255, 255 } };
 		//DrawLine(a, b);
 		//InterpolatedTriangle(a, b, c);
-		TexturedTriangle(a, b, c, "asd");
+		TexturedTriangle(a, b, c, "asd");*/
+		
+
+		// It is a sratch of future 3D edngine pipleine
+		e3Dg::Vector3f vertices[36] = {
+			// front
+			{-0.5f, -0.5f, 0.0f }, { -0.5f, 0.5f, 0.0f }, { 0.5f, 0.5f, 0.0f },
+			{-0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f }, { 0.5f, -0.5f, 0.0f },
+			// back
+			{-0.5f, -0.5f, 1.0f}, { 0.5f, 0.5f, 1.0f }, { -0.5f, 0.5f, 1.0f },
+			{-0.5f, -0.5f, 1.0f}, { 0.5f, -0.5f, 1.0f }, { 0.5f, 0.5f, 1.0f },
+			// top
+			{ -0.5f, 0.5f, 0.0f }, { -0.5f, 0.5f, 1.0f }, { 0.5f, 0.5f, 1.0f },
+			{ -0.5f, 0.5f, 0.0f }, { 0.5f, 0.5f, 1.0f }, { 0.5f, 0.5f, 0.0f },
+			// bottom
+			{ -0.5f, -0.5f, 0.0f }, { 0.5f, -0.5f, 1.0f }, { -0.5f, -0.5f, 1.0f },
+			{ -0.5f, -0.5f, 0.0f }, { 0.5f, -0.5f, 0.0f }, { 0.5f, -0.5f, 1.0f },
+			// left
+			{ -0.5f, -0.5f, 1.0f }, { -0.5f, 0.5f, 1.0f }, { -0.5f, 0.5f, 0.0f },
+			{ -0.5f, -0.5f, 1.0f }, { -0.5f, 0.5f, 0.0f }, { -0.5f, -0.5f, 0.0f },
+			// right
+			{ 0.5f, -0.5f, 1.0f }, { 0.5f, 0.5f, 0.0f }, { 0.5f, 0.5f, 1.0f },
+			{ 0.5f, -0.5f, 1.0f }, { 0.5f, -0.5f, 0.0f }, { 0.5f, 0.5f, 0.0f }
+		};
+
+		// Creating of the array in homogenous coordinates (it is stupid, but i just wanted to draw cube as fast as I can)
+		e3Dg::Vector4f homogenVertices[36];
+		for (int i = 0; i < 36; ++i) {
+			e3Dg::Vector3f vertex = vertices[i];
+			homogenVertices[i] = { vertex[0], vertex[1], vertex[2], 1 };
+		}
+
+		const float rotCos = std::cos(m_time);
+		const float rotSin = std::sin(m_time);
+		// Rotation over OY axi
+		const e3Dg::Matrix4x4 yRotmat = {
+			rotCos, 0, rotSin, 0,
+			0, 1, 0, 0,
+			-rotSin, 0, rotCos, 0,
+			0, 0, 0, 1
+		};
+		for (int i = 0; i < 36; ++i) {
+			homogenVertices[i] = homogenVertices[i] * yRotmat;
+		}
+		// Rotation over OX axis
+		const e3Dg::Matrix4x4 xRotMat = {
+			1, 0, 0, 0,
+			0, rotCos, -rotSin, 0,
+			0, rotSin, rotCos, 0,
+			0, 0, 0, 1
+		};
+		for (int i = 0; i < 36; ++i) {
+			e3Dg::Vector4f vertex = homogenVertices[i];
+			homogenVertices[i] = homogenVertices[i] * xRotMat;
+		}
+		// Rotation over OZ axis
+		const e3Dg::Matrix4x4 zRotMat = {
+			rotCos, -rotSin, 0, 0,
+			rotSin, rotCos, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1
+		};
+		for (int i = 0; i < 36; ++i) {
+			homogenVertices[i] = homogenVertices[i] * zRotMat;
+		}
+
+		const float scalingCoeff = 0.025;
+		// Here I scale and translate vertices
+		const e3Dg::Matrix4x4 scalingMat = {
+			scalingCoeff, 0, 0, 0,
+			0, scalingCoeff, 0, 0,
+			0, 0, scalingCoeff, 0,
+			0, 0, 0, 1
+		};
+		for (int i = 0; i < 36; ++i) {
+			homogenVertices[i] = homogenVertices[i] * scalingMat;
+			homogenVertices[i].coord.z -= 0.2f;
+		}
+
+		// Perspective projection calculation
+		const float aspectRatio = (float)m_pixelsHNum / m_pixelsWNum;
+		const float FoV = M_PI / 4;
+		const float FoVValue = 1 / std::tan(FoV / 2);
+		const float zNear = 0.1f;
+		const float zFar = 100.0f;
+		const float zDiff = zFar - zNear;
+		const e3Dg::Matrix4x4 perspectiveProjMatrix = {
+			aspectRatio * FoVValue, 0, 0, 0,
+			0, FoVValue, 0, 0,
+			0, 0, (zFar + zNear) / zDiff, 1,
+			0, 0, - (2 * zNear * zFar) / zDiff, 0
+		};
+
+		for (int i = 0; i < 36; ++i) {
+			homogenVertices[i] = homogenVertices[i] * perspectiveProjMatrix;
+			if (homogenVertices[i].coord.w != 0) {
+				homogenVertices[i] = homogenVertices[i] / homogenVertices[i].coord.w;
+			}
+		}
+
+		// Here are drawing logic: I just sequently get 3 vertices from the array and test normals of the polygons
+		for (int i = 0; i < 36; i += 3) {
+			const e3Dg::Vector4f aH = homogenVertices[i];
+			const e3Dg::Vector4f bH = homogenVertices[i + 1];
+			const e3Dg::Vector4f cH = homogenVertices[i + 2];
+			// Calculation of the polygon normal (fV - firstVec, sV - secondVec)
+			const e3Dg::Vector3f fV = e3Dg::vecToEuclid(bH - aH);
+			const e3Dg::Vector3f sV = e3Dg::vecToEuclid(cH - aH);
+			const e3Dg::Vector3f normal = e3Dg::crossProduct(fV, sV);
+			// Calculation of the dot product for testing normals
+			const float dotProduct = e3Dg::dotProduct(m_lookTo, normal);
+			if (dotProduct < 0) {
+				// TODO: Move this to new method and think about how to pass data to the drawing functions
+				const Pixel a = { aH[0] * m_pixelsWNum + m_pixelsWNum * 0.5, aH[1] * m_pixelsHNum + m_pixelsHNum * 0.5, { 255, 0, 0 } };
+				const Pixel b = { bH[0] * m_pixelsWNum + m_pixelsWNum * 0.5, bH[1] * m_pixelsHNum + m_pixelsHNum * 0.5, { 0, 255, 0 } };
+				const Pixel c = { cH[0] * m_pixelsWNum + m_pixelsWNum * 0.5, cH[1] * m_pixelsHNum + m_pixelsHNum * 0.5, { 0, 0, 255 } };
+				InterpolatedTriangle(a, b, c);
+				DrawTriangle(a, b, c);
+			}
+		}
 	}
 };
 

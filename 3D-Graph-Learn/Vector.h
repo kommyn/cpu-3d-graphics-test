@@ -2,11 +2,11 @@
 
 #include <iostream>
 
-// TODO: Change namespace name to something cool
-namespace MyGeo {
+namespace e3Dg {
 	template <unsigned char N>
 	class Vector;
 
+	// Just a bunch of operator prototypes
 	template <unsigned char N>
 	Vector<N>& operator+(Vector<N> A, const Vector<N>& B);
 
@@ -20,44 +20,64 @@ namespace MyGeo {
 	Vector<N>& operator*(const float& value, Vector<N> A);
 
 	template <unsigned char N>
+	Vector<N>& operator/(Vector<N> A, const float& value);
+
+	// It is coords template structure that are used for using in union of data with vectors of size 1, 2, 3, 4
+	template <unsigned int N>
+	struct Coords {};
+
+	template <>
+	struct Coords<1> {
+		float value;
+	};
+
+	template <>
+	struct Coords<2> {
+		float x, y;
+	};
+
+	template <>
+	struct Coords<3> {
+		float x, y, z;
+	};
+
+	template <>
+	struct Coords<4> {
+		float x, y, z, w;
+	};
+
+	// Vector class itself
+	template <unsigned char N>
 	class Vector {
-	private:
-		float m_coords[N];
 	public:
+		union {
+			float m_coords[N];
+			Coords<N> coord;
+		};
+
 		Vector();
-		Vector(int&& val) {
-			std::cout << "val: " << val << std::endl;
-		}
-		template<typename... U,
-			typename = typename std::enable_if<sizeof...(U) - 1>::type>
-			Vector(U&&... values)
-		{
-			static_assert(sizeof...(values) == N, "wrong size");
-			std::array<int, N> data{ values... };
-			for (auto item : data) {
-				std::cout << item << std::endl;
-			}
-		}
-		/*Vector(std::initializer_list<float> list) {
-			for (int i = 0; i < list.size(); ++i) {
-				m_coords[i] = *(list.begin() + i);
-			}
-		}*/
 		~Vector() = default;
 
+		// TODO: Find a way how to move this constructor to template file
+		template <typename ...T>
+		Vector(T... data) : m_coords{ static_cast<float>(data)... } {}
+
+		// TODO: Add more operators: /=, *=, +=, -=
 		float& operator[](const int& index);
 		float& operator[](int&& index);
 		const float& operator[](const int& index) const;
 		const float& operator[](int&& index) const;
-
+		Vector<N>& operator=(std::initializer_list<float> list);
 		friend Vector<N>& operator+ <>(Vector<N> A, const Vector<N>& B);
 		friend Vector<N>& operator- <>(Vector<N> A, const Vector<N>& B);
 		friend Vector<N>& operator* <>(Vector<N> A, const float& value);
 		friend Vector<N>& operator* <>(const float& value, Vector<N> A);
+		friend Vector<N>& operator/ <>(Vector<N> A, const float& value);
 
-		float dot(const Vector<N>& a);
-		void display();
-		Vector<N> cross(const Vector<N>& a);
+
+		// TODO: Think about moving of this methods to GrapUtils.h
+		float dot(const Vector<N>& a) const;
+		void display() const;
 	};
 
 #include "Vector.cpp"

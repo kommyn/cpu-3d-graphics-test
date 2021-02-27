@@ -1,4 +1,4 @@
-using namespace MyGeo;
+using namespace e3Dg;
 
 template <unsigned char N>
 Vector<N>::Vector() {
@@ -8,7 +8,7 @@ Vector<N>::Vector() {
 }
 
 template <unsigned char N>
-void Vector<N>::display() {
+void Vector<N>::display() const {
 	std::cout << "(";
 	for (int i = 0; i < N; ++i) {
 		std::cout << m_coords[i];
@@ -38,42 +38,50 @@ const float& Vector<N>::operator[](int&& index) const {
 }
 
 template <unsigned char N>
-Vector<N>& MyGeo::operator+(Vector<N> A, const Vector<N>& B) {
+Vector<N>& e3Dg::operator+(Vector<N> A, const Vector<N>& B) {
 	for (int i = 0; i < N; ++i) A[i] += B[i];
 	return A;
 }
 
 template <unsigned char N>
-Vector<N>& MyGeo::operator-(Vector<N> A, const Vector<N>& B) {
+Vector<N>& e3Dg::operator-(Vector<N> A, const Vector<N>& B) {
 	for (int i = 0; i < N; ++i) A[i] -= B[i];
 	return A;
 }
 
 template <unsigned char N>
-Vector<N>& MyGeo::operator*(Vector<N> A, const float& value) {
+Vector<N>& e3Dg::operator*(Vector<N> A, const float& value) {
 	for (int i = 0; i < N; ++i) A[i] *= value;
 	return A;
 }
 
 template <unsigned char N>
-Vector<N>& MyGeo::operator*(const float& value, Vector<N> A) {
+Vector<N>& e3Dg::operator*(const float& value, Vector<N> A) {
 	for (int i = 0; i < N; ++i) A[i] *= value;
 	return A;
 }
 
 template <unsigned char N>
-float Vector<N>::dot(const Vector<N>& a) {
+Vector<N>& e3Dg::operator/(Vector<N> A, const float& value) {
+	for (int i = 0; i < N; ++i) A[i] /= value;
+	return A;
+}
+
+template <unsigned char N>
+float Vector<N>::dot(const Vector<N>& a) const {
 	float dotProduct = 0;
 	for (int i = 0; i < N; ++i) dotProduct += m_coords[i] * a[i];
 	return dotProduct;
 }
 
 template <unsigned char N>
-Vector<N> Vector<N>::cross(const Vector<N>& a) {
-	Vector<N> result;
-	if (N != 3) return result;
-	result[0] = m_coords[1] * a[2] - m_coords[2] * a[1];
-	result[1] = m_coords[2] * a[0] - m_coords[0] * a[2];
-	result[2] = m_coords[0] * a[1] - m_coords[1] * a[0];
-	return result;
+Vector<N>& Vector<N>::operator=(std::initializer_list<float> list) {
+	const unsigned int size = list.size() < N ? list.size() : N;
+	for (int i = 0; i < size; ++i) {
+		this->m_coords[i] = *(list.begin() + i);
+	}
+	for (int i = size; i < N; ++i) {
+		this->m_coords[i] = 0;
+	}
+	return *this;
 }

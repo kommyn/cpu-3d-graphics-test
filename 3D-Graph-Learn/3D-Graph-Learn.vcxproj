@@ -142,6 +142,7 @@
     <ClCompile Include="Engine3D.cpp" />
     <ClCompile Include="EngineBase.cpp" />
     <ClCompile Include="EngineWindows.cpp" />
+    <ClCompile Include="GraphUtils.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="EngineWindow.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -152,6 +153,7 @@
     <ClInclude Include="EngineBase.h" />
     <ClInclude Include="EngineWindow.h" />
     <ClInclude Include="EngineWindows.h" />
+    <ClInclude Include="GraphUtils.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Texture.h" />
