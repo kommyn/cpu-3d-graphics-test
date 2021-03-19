@@ -46,17 +46,79 @@ LRESULT CALLBACK EngineWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 		PostQuitMessage(0);
 		return 0;
 	case WM_KEYDOWN:
+	case WM_KEYUP:
 		if (wParam == VK_ESCAPE) {
 			mainEngine->m_isEngineActive = false;
 			DestroyWindow(hWnd);
 		}
+		mainEngine->KeyPressHandler(mainEngine, wParam, lParam);
 		return 0;
+	case WM_MOUSEMOVE:
+		mainEngine->MouseMoveHandler(mainEngine, wParam, lParam);
+		return 0;
+	case WM_LBUTTONUP:
+	case WM_LBUTTONDOWN:
+		MouseClickHandler(mainEngine, wParam, lParam, MouseButton::LEFT);
+		return 0;
+	case WM_RBUTTONUP:
+	case WM_RBUTTONDOWN:
+		MouseClickHandler(mainEngine, wParam, lParam, MouseButton::RIGHT);
+		return 0;
+	case WM_MBUTTONUP:
+	case WM_MBUTTONDOWN:
+		MouseClickHandler(mainEngine, wParam, lParam, MouseButton::MIDDLE);
+		return 0;
+	case WM_XBUTTONUP:
+	case WM_XBUTTONDOWN:
+		MouseClickHandler(mainEngine, wParam, lParam, MouseButton::XBUTTON);
 	default:
 		return DefWindowProc(hWnd, uMsg, wParam, lParam);
 	}
 }
 
+#define GET_X_COORD_LPARAM(lParam) (int)(short)(lParam & 0xFFFF)
+#define GET_Y_COORD_LPARAM(lParam) (int)(short)((lParam >> 16) & 0xFFFF)
+
+void EngineWindows::MouseClickHandler(EngineWindows* engine, const WPARAM& wParam, const LPARAM& lParam, MouseButton clickedButton) {
+	const int xPos = GET_X_COORD_LPARAM(lParam);
+	const int yPos = GET_Y_COORD_LPARAM(lParam);
+
+	MouseFlagsStatus status;
+	status.ctrlDown = wParam & MK_CONTROL;
+	status.shiftDown = wParam & MK_SHIFT;
+	status.leftDown = wParam & MK_LBUTTON;
+	status.rightDown = wParam & MK_RBUTTON;
+	status.middleDown = wParam & MK_MBUTTON;
+	status.xbutton1Down = wParam & MK_XBUTTON1;
+	status.xbutton2Down = wParam & MK_XBUTTON2;
+	engine->OnMouseClick(clickedButton, xPos, yPos, status);
+}
+
+void EngineWindows::MouseMoveHandler(EngineWindows* engine, WPARAM wParam, LPARAM lParam) {
+	const int xPos = GET_X_COORD_LPARAM(lParam);
+	const int yPos = GET_Y_COORD_LPARAM(lParam);
+
+	MouseFlagsStatus status;
+	status.ctrlDown = wParam & MK_CONTROL;
+	status.shiftDown = wParam & MK_SHIFT;
+	status.leftDown = wParam & MK_LBUTTON;
+	status.rightDown = wParam & MK_RBUTTON;
+	status.middleDown = wParam & MK_MBUTTON;
+	status.xbutton1Down = wParam & MK_XBUTTON1;
+	status.xbutton2Down = wParam & MK_XBUTTON2;
+	engine->OnMouseMove(xPos, yPos, status);
+}
+
+#include <windowsx.h>
+
+void EngineWindows::KeyPressHandler(EngineWindows* engine, WPARAM wParam, LPARAM lParam) {
+	bool prevState = (lParam >> 30) & 0x1;
+	bool buttonState = !((lParam >> 31) & 0x1);
+	engine->OnKeyPress(wParam, prevState, buttonState);
+}
+
 bool EngineWindows::CreateGameWindow(const int& screenWidth, const int& screenHeight, const int& pixelWidth, const int& pixelHeight) {
+	// TODO: That is stupid, rewrite it to correct logic (I already know screenWidth and screenHeight, there is no need for extra calculation)
 	m_pixelWidth = pixelWidth;
 	m_pixelHeight = pixelHeight;
 	m_pixelsWNum = screenWidth / pixelWidth;
@@ -118,6 +180,9 @@ bool EngineWindows::CreateGameWindow(const int& screenWidth, const int& screenHe
 	m_backBitmap = CreateDIBSection(m_mainHdc, &bitmapInfo, DIB_RGB_COLORS, &m_pvBits, NULL, NULL);
 	if (!m_backBitmap) return HandleError(L"Creating DIB section error");
 	if (!SelectObject(m_backHdc, m_backBitmap)) return HandleError(L"DIB setting error");
+
+	RECT rect = { 100, 100, m_screenWidth + 100, m_screenHeight + 100 };
+	ClipCursor(&rect);
 
 	return true;
 }

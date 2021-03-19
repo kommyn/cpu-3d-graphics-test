@@ -18,6 +18,25 @@ struct Pixel {
 	RGBAColor color;
 };
 
+// TODO: Change it to something multiplatform
+struct MouseFlagsStatus {
+	bool ctrlDown;
+	bool shiftDown;
+	bool leftDown;
+	bool rightDown;
+	bool middleDown;
+	bool xbutton1Down;
+	bool xbutton2Down;
+};
+
+// TODO: Change it to something multiplatform
+enum class MouseButton {
+	LEFT,
+	RIGHT,
+	MIDDLE,
+	XBUTTON
+};
+
 class EngineBase
 {
 protected:
@@ -33,8 +52,9 @@ public:
 	virtual void ComputeElapsedTime();
 	virtual void SetPixel(const Pixel& point) = 0;
 
-	virtual void OnMouseClick() = 0;
-	virtual void OnKeyPress() = 0;
+	virtual void OnMouseClick(const MouseButton& button, const int& xPos, const int& yPos, const MouseFlagsStatus& status) = 0;
+	virtual void OnMouseMove(const int& xPos, const int& yPos, const MouseFlagsStatus& status) = 0;
+	virtual void OnKeyPress(const unsigned int& wParam, const bool& prevState, const bool& buttonState) = 0;
 	virtual void OnResize() = 0;
 	virtual void OnDraw() = 0;
 };

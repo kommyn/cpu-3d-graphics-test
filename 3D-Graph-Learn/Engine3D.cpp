@@ -1,9 +1,19 @@
 #include "Engine3D.h"
 
 Engine3D::Engine3D() {
-	m_lookTo[0] = 0.0f;
-	m_lookTo[1] = 0.0f;
-	m_lookTo[2] = -1.0f;
+	m_cameraForward = { 0.0f, 0.0f, 1.0f };
+	m_cameraPos = { 0.0f, 0.0f, 2.0f };
+	m_cameraRight = e3Dg::crossProduct(e3Dg::Vector3f({ 0.0f, 1.0f, 0.0f }), m_cameraForward);
+	m_cameraUp = e3Dg::crossProduct(m_cameraForward, m_cameraRight);
+	m_cameraSpeed = 0.5;
+	m_cameraPitch = 0;
+	m_cameraYaw = M_PI / 2;
+	m_firstRender = true;
+	m_cursorResetting = false;
+	m_lastMouseX = 0;
+	m_lastMouseY = 0;
+	// TODO: Add ShowCursor function to EngineBase class
+	ShowCursor(FALSE);
 }
 
 void Engine3D::DrawLine(Pixel a, Pixel b) {
@@ -220,4 +230,19 @@ void Engine3D::TexturedTriangle(Pixel a, Pixel b, Pixel c, std::string filePath)
 
 void Engine3D::VertexPipe() {
 
+}
+
+e3Dg::Matrix4x4 lookAtCalc(const e3Dg::Vector3f& from, const e3Dg::Vector3f& to, const e3Dg::Vector3f& tmp) {
+	e3Dg::Vector3f cameraForward = normalize(from - to);
+	e3Dg::Vector3f cameraRight = normalize(crossProduct(normalize(tmp), cameraForward));
+	e3Dg::Vector3f cameraUp = normalize(crossProduct(cameraRight, cameraForward));
+
+	e3Dg::Matrix4x4 camToWorld = {
+			cameraRight[0], cameraRight[1], cameraRight[2], -dotProduct(from, cameraRight),
+			cameraUp[0], cameraUp[1], cameraUp[2], -dotProduct(from, cameraUp),
+			cameraForward[0], cameraForward[1], cameraForward[2], -dotProduct(from, cameraForward),
+			0, 0, 0, 1
+	};
+
+	return camToWorld;
 }

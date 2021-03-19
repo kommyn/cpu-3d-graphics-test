@@ -24,6 +24,9 @@ namespace e3Dg {
 	template <unsigned int M, unsigned int N>
 	Vector<N> operator*(const Vector<M>& vec, const Matrix<M, N>& mat);
 
+	template <unsigned int M, unsigned int N>
+	Vector<M> operator*(const Matrix<M, N>& mat, const Vector<N>& vec);
+
 	// Class itself prototype
 	template <unsigned int M, unsigned int N>
 	class Matrix {
@@ -46,7 +49,6 @@ namespace e3Dg {
 			}
 		}
 
-		// TODO: Add more operators: /=, *=, +=, -=
 		Matrix<M, N>& operator=(const Matrix<M, N>& mat);
 		float& operator[](const int& index);
 		float& operator[](int&& index);
@@ -54,11 +56,38 @@ namespace e3Dg {
 		const float& operator[](int&& index) const;
 		float& operator()(const int& mIndex, const int& nIndex);
 		float& operator()(int&& mIndex, int&& nIndex);
+		const float& operator()(const int& mIndex, const int& nIndex) const;
+		const float& operator()(int&& mIndex, int&& nIndex) const;
 		friend Matrix<M, N>& operator+ <> (Matrix<M, N> A, const Matrix<M, N>& B);
 		friend Matrix<M, N>& operator- <>(Matrix<M, N> A, const Matrix<M, N>& B);
 		friend Matrix<M, N>& operator* <>(Matrix<M, N> mat, const float& value);
 		friend Matrix<M, N>& operator* <>(const float& value, Matrix<M, N> mat);
 		friend Vector<N> operator* <>(const Vector<M>& vec, const Matrix<M, N>& mat);
+		friend Vector<M> operator* <>(const Matrix<M, N>& mat, const Vector<N>& vec);
+		Matrix<N, N> operator-() const;
+		Matrix<M, N>& operator+=(const Matrix<M, N>& mat);
+		Matrix<M, N>& operator-=(const Matrix<M, N>& mat);
+		Matrix<M, N>& operator*=(const float& value);
+		Matrix<M, N>& operator/=(const float& value);
+
+		template <unsigned int U>
+		Matrix<M, U>& operator*=(const Matrix<N, U>& matrix) {
+			const unsigned int size = M * N;
+			float tempValues[size];
+			for (int i = 0; i < size; ++i) {
+				tempValues[i] = m_values[i];
+				m_values[i] = 0;
+			}
+			for (int i = 0; i < M; ++i) {
+				for (int j = 0; j < U; ++j) {
+					int currentIndex = i + j * M;
+					for (int k = 0; k < N; ++k) {
+						m_values[currentIndex] += tempValues[i + k * M] * matrix[k + j * N];
+					}
+				}
+			}
+			return *this;
+		}
 
 		// TODO: Find a way to move this overloaded operator to template file
 		template <unsigned int U>
@@ -75,10 +104,11 @@ namespace e3Dg {
 			return result;
 		}
 
-		// TODO: Think about moving of this methods to GrapUtils.h
-		Matrix<N, M> transpose();
-		float det();
-		void display();
+		// TODO: Think about moving of this method to GrapUtils.h
+		Matrix<N, M> transpose() const;
+		// TODO: Think about moving of this method to GrapUtils.h
+		float det() const;
+		void display() const;
 	};
 
 #include "Matrix.cpp"

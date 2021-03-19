@@ -39,6 +39,9 @@
     <ClCompile Include="GraphUtils.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="BaseCamera.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EngineWindow.h">
@@ -69,6 +72,9 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="GraphUtils.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseCamera.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

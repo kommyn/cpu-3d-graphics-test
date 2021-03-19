@@ -26,10 +26,15 @@ std::wstring convertToWstring(T value) {
 	return valueToReturn;
 }
 
+
 class EngineWindows : public EngineBase
 {
 private:
+	// TODO: Workaround click and press messages handling (I don't like how it's currently working, maybe it's a good idea to look at SFML and glfw)
 	static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static void MouseClickHandler(EngineWindows* engine, const WPARAM& wParam, const LPARAM& lParam, MouseButton clickedButton);
+	static void MouseMoveHandler(EngineWindows* engine, WPARAM wParam, LPARAM lParam);
+	static void KeyPressHandler(EngineWindows* engine, WPARAM wParam, LPARAM lParam);
 
 	void ReleaseData();
 protected:
@@ -61,7 +66,8 @@ public:
 	virtual void SetPixel(const Pixel& pixel) override;
 
 	void OnDraw() override {};
-	void OnMouseClick() override {};
-	void OnKeyPress() override {};
+	void OnMouseMove(const int& xPos, const int& yPos, const MouseFlagsStatus& status) override {};
+	void OnMouseClick(const MouseButton& button, const int& xPos, const int& yPos, const MouseFlagsStatus& status) override {};
+	void OnKeyPress(const unsigned int& wParam, const bool& prevState, const bool& buttonState) override {};
 	void OnResize() override {};
 };

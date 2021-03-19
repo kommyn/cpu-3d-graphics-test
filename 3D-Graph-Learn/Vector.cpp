@@ -68,13 +68,6 @@ Vector<N>& e3Dg::operator/(Vector<N> A, const float& value) {
 }
 
 template <unsigned char N>
-float Vector<N>::dot(const Vector<N>& a) const {
-	float dotProduct = 0;
-	for (int i = 0; i < N; ++i) dotProduct += m_coords[i] * a[i];
-	return dotProduct;
-}
-
-template <unsigned char N>
 Vector<N>& Vector<N>::operator=(std::initializer_list<float> list) {
 	const unsigned int size = list.size() < N ? list.size() : N;
 	for (int i = 0; i < size; ++i) {
@@ -84,4 +77,52 @@ Vector<N>& Vector<N>::operator=(std::initializer_list<float> list) {
 		this->m_coords[i] = 0;
 	}
 	return *this;
+}
+
+template <unsigned char N>
+Vector<N>& Vector<N>::operator+=(const Vector<N>& vector) {
+	for (int i = 0; i < N; ++i) {
+		m_coords[i] += vector[i];
+	}
+	return *this;
+}
+
+template <unsigned char N>
+Vector<N>& Vector<N>::operator-=(const Vector<N>& vector) {
+	for (int i = 0; i < N; ++i) {
+		m_coords[i] -= vector[i];
+	}
+	return *this;
+}
+
+template <unsigned char N>
+Vector<N>& Vector<N>::operator*=(const float& value) {
+	for (int i = 0; i < N; ++i) {
+		m_coords[i] *= value;
+	}
+	return *this;
+}
+
+template <unsigned char N>
+Vector<N>& Vector<N>::operator/=(const float& value) {
+	for (int i = 0; i < N; ++i) {
+		m_coords[i] /= value;
+	}
+	return *this;
+}
+
+template <unsigned char N>
+float Vector<N>::dot(const Vector<N>& a) const {
+	float dotProduct = 0;
+	for (int i = 0; i < N; ++i) dotProduct += m_coords[i] * a[i];
+	return dotProduct;
+}
+
+template <unsigned char N>
+float Vector<N>::length() const {
+	float sum = 0;
+	for (int i = 0; i < N; ++i) {
+		sum += m_coords[i] * m_coords[i];
+	}
+	return std::sqrt(sum);
 }

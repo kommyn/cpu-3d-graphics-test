@@ -11,6 +11,11 @@ namespace e3Dg {
 		return sum;
 	}
 
+	template <unsigned char N>
+	Vector<N> normalize(const Vector<N>& A) {
+		return A / A.length();
+	}
+
 	Vector3f crossProduct(const Vector3f& A, const Vector3f& B);
 
 	Vector4f vecToHomogen(const Vector3f& a);

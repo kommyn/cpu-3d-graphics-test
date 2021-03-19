@@ -60,9 +60,10 @@ namespace e3Dg {
 
 		// TODO: Find a way how to move this constructor to template file
 		template <typename ...T>
-		Vector(T... data) : m_coords{ static_cast<float>(data)... } {}
+		Vector(T... data) : m_coords{ static_cast<float>(data)... } {
+		}
 
-		// TODO: Add more operators: /=, *=, +=, -=
+		// TODO: Think about adding of *= operator for Vector*Matrix multiplication
 		float& operator[](const int& index);
 		float& operator[](int&& index);
 		const float& operator[](const int& index) const;
@@ -73,10 +74,14 @@ namespace e3Dg {
 		friend Vector<N>& operator* <>(Vector<N> A, const float& value);
 		friend Vector<N>& operator* <>(const float& value, Vector<N> A);
 		friend Vector<N>& operator/ <>(Vector<N> A, const float& value);
+		Vector<N>& operator+=(const Vector<N>& vector);
+		Vector<N>& operator-=(const Vector<N>& vector);
+		Vector<N>& operator*=(const float& value);
+		Vector<N>& operator/=(const float& value);
 
-
-		// TODO: Think about moving of this methods to GrapUtils.h
+		// TODO: Think about moving of this method to GrapUtils.h
 		float dot(const Vector<N>& a) const;
+		float length() const;
 		void display() const;
 	};
 

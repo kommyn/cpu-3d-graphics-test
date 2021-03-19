@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BaseCamera.cpp" />
     <ClCompile Include="Engine3D.cpp" />
     <ClCompile Include="EngineBase.cpp" />
     <ClCompile Include="EngineWindows.cpp" />
@@ -149,6 +150,7 @@
     <ClCompile Include="TexturesFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BaseCamera.h" />
     <ClInclude Include="Engine3D.h" />
     <ClInclude Include="EngineBase.h" />
     <ClInclude Include="EngineWindow.h" />

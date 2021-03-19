@@ -19,14 +19,12 @@ Matrix<M, N>::Matrix(const float& value) {
 	}
 }
 
-
-
 ///////////////////////////////////////////////////////
 // Methods
 ///////////////////////////////////////////////////////
 
 template <unsigned int M, unsigned int N>
-void Matrix<M, N>::display() {
+void Matrix<M, N>::display() const {
 	int size = M * N;
 	for (int i = 0; i < M; ++i) {
 		for (int j = 0; j < N; ++j) {
@@ -76,8 +74,19 @@ float& Matrix<M, N>::operator()(int&& mIndex, int&& nIndex) {
 }
 
 template <unsigned int M, unsigned int N>
+const float& Matrix<M, N>::operator()(const int& mIndex, const int& nIndex) const {
+	return m_values[mIndex + M * nIndex];
+}
+
+template <unsigned int M, unsigned int N>
+const float& Matrix<M, N>::operator()(int&& mIndex, int&& nIndex) const {
+	return m_values[mIndex + M * nIndex];
+}
+
+template <unsigned int M, unsigned int N>
 Matrix<M, N>& e3Dg::operator+(Matrix<M, N> A, const Matrix<M, N>& B) {
 	int size = M * N;
+	std::cout << "opeartor+" << std::endl;
 	for (int i = 0; i < size; ++i) {
 		A[i] += B[i];
 	}
@@ -123,7 +132,64 @@ Vector<N> e3Dg::operator*(const Vector<M>& vec, const Matrix<M, N>& mat) {
 }
 
 template <unsigned int M, unsigned int N>
-Matrix<N, M> Matrix<M, N>::transpose() {
+Vector<M> e3Dg::operator*(const Matrix<M, N>& mat, const Vector<N>& vec) {
+	Vector<M> result;
+	for (int i = 0; i < M; ++i) {
+		for (int j = 0; j < N; ++j) {
+			result[i] += vec[j] * mat[i + M * j];
+		}
+	}
+	return result;
+}
+
+template <unsigned int M, unsigned int N>
+Matrix<N, N> Matrix<M,N>::operator-() const {
+	Matrix<M, N> result;
+	const unsigned int size = M * N;
+	for (unsigned int i = 0; i < size; ++i) {
+		result[i] = - m_values[i];
+	}
+	return result;
+}
+
+template <unsigned int M, unsigned int N>
+Matrix<M, N>& Matrix<M, N>::operator+=(const Matrix<M, N>& mat) {
+	const unsigned int size = M * N;
+	for (unsigned int i = 0; i < size; ++i) {
+		m_values[i] += mat[i];
+	}
+	return *this;
+}
+
+template <unsigned int M, unsigned int N>
+Matrix<M, N>& Matrix<M, N>::operator-=(const Matrix<M, N>& mat) {
+	const unsigned int size = M * N;
+	for (unsigned int i = 0; i < size; ++i) {
+		m_values[i] -= mat[i];
+	}
+	return *this;
+}
+
+template <unsigned int M, unsigned int N>
+Matrix<M, N>& Matrix<M, N>::operator*=(const float& value) {
+	const unsigned int size = M * N;
+	for (unsigned int i = 0; i < size; ++i) {
+		m_values[i] *= value;
+	}
+	return *this;
+}
+
+template <unsigned int M, unsigned int N>
+Matrix<M, N>& Matrix<M, N>::operator/=(const float& value) {
+	const unsigned int size = M * N;
+	for (unsigned int i = 0; i < size; ++i) {
+		m_values[i] /= value;
+	}
+	return *this;
+}
+
+template <unsigned int M, unsigned int N>
+Matrix<N, M> Matrix<M, N>::transpose() const {
 	Matrix<N, M> result;
 	for (int i = 0; i < M; ++i) {
 		for (int j = 0; j < N; ++j) {
@@ -134,7 +200,7 @@ Matrix<N, M> Matrix<M, N>::transpose() {
 }
 
 template <unsigned int M, unsigned int N>
-float Matrix<M, N>::det() {
+float Matrix<M, N>::det() const {
 	if (N != M) return 0;
 	return calcDet(m_values, M, N);
 }
