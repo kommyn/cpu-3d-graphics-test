@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-namespace e3Dg {
+namespace vgu {
 	template <unsigned char N>
 	class Vector;
 

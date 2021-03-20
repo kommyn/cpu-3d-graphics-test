@@ -3,7 +3,7 @@
 #include "Vector.h"
 
 // TODO: Change namespace name to something cool
-namespace e3Dg {
+namespace vgu {
 	// Matrix class prototype
 	template <unsigned int M, unsigned int N>
 	class Matrix;

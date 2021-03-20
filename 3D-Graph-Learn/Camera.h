@@ -15,16 +15,16 @@ struct PressedMovingKeys {
 class Camera
 {
 private:
-	e3Dg::Vector3f m_pos;
-	e3Dg::Vector3f m_dir;
-	e3Dg::Vector3f m_up;
-	e3Dg::Vector3f m_right;
-	e3Dg::Vector3f m_baseUp;
+	vgu::Vector3f m_pos;
+	vgu::Vector3f m_dir;
+	vgu::Vector3f m_up;
+	vgu::Vector3f m_right;
+	vgu::Vector3f m_baseUp;
 	float m_pitch;
 	float m_yaw;
 	float m_speed;
 	float m_sensitivity;
-	e3Dg::Matrix4x4 m_lookAt;
+	vgu::Matrix4x4 m_lookAt;
 
 	void RecalculateLookAtMatrix();
 public:
@@ -33,11 +33,11 @@ public:
 	void SetSpeed(const float& speed);
 	void SetSensetivity(const float& sensetivity);
 
-	const e3Dg::Matrix4x4& GetLookAtMatrix() const;
-	const e3Dg::Vector3f& GetPos() const;
-	const e3Dg::Vector3f& GetDir() const;
-	const e3Dg::Vector3f& GetUp() const;
-	const e3Dg::Vector3f& GetRight() const;
+	const vgu::Matrix4x4& GetLookAtMatrix() const;
+	const vgu::Vector3f& GetPos() const;
+	const vgu::Vector3f& GetDir() const;
+	const vgu::Vector3f& GetUp() const;
+	const vgu::Vector3f& GetRight() const;
 	const float GetYaw() const;
 	const float GetPitch() const;
 	const float GetSpeed() const;

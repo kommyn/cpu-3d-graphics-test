@@ -1,4 +1,4 @@
-using namespace e3Dg;
+using namespace vgu;
 
 ///////////////////////////////////////////////////////
 // Constructors
@@ -84,7 +84,7 @@ const float& Matrix<M, N>::operator()(int&& mIndex, int&& nIndex) const {
 }
 
 template <unsigned int M, unsigned int N>
-Matrix<M, N>& e3Dg::operator+(Matrix<M, N> A, const Matrix<M, N>& B) {
+Matrix<M, N>& vgu::operator+(Matrix<M, N> A, const Matrix<M, N>& B) {
 	int size = M * N;
 	std::cout << "opeartor+" << std::endl;
 	for (int i = 0; i < size; ++i) {
@@ -94,7 +94,7 @@ Matrix<M, N>& e3Dg::operator+(Matrix<M, N> A, const Matrix<M, N>& B) {
 }
 
 template <unsigned int M, unsigned int N>
-Matrix<M, N>& e3Dg::operator-(Matrix<M, N> A, const Matrix<M, N>& B) {
+Matrix<M, N>& vgu::operator-(Matrix<M, N> A, const Matrix<M, N>& B) {
 	int size = M * N;
 	for (int i = 0; i < size; ++i) {
 		A[i] -= B[i];
@@ -103,7 +103,7 @@ Matrix<M, N>& e3Dg::operator-(Matrix<M, N> A, const Matrix<M, N>& B) {
 }
 
 template <unsigned int M, unsigned int N>
-Matrix<M, N>& e3Dg::operator*(Matrix<M, N> mat, const float& value) {
+Matrix<M, N>& vgu::operator*(Matrix<M, N> mat, const float& value) {
 	unsigned int size = M * N;
 	for (int i = 0; i < size; ++i) {
 		mat[i] *= value;
@@ -112,7 +112,7 @@ Matrix<M, N>& e3Dg::operator*(Matrix<M, N> mat, const float& value) {
 }
 
 template <unsigned int M, unsigned int N>
-Matrix<M, N>& e3Dg::operator*(const float& value, Matrix<M, N> mat) {
+Matrix<M, N>& vgu::operator*(const float& value, Matrix<M, N> mat) {
 	unsigned int size = M * N;
 	for (int i = 0; i < size; ++i) {
 		mat[i] *= value;
@@ -121,7 +121,7 @@ Matrix<M, N>& e3Dg::operator*(const float& value, Matrix<M, N> mat) {
 }
 
 template <unsigned int M, unsigned int N>
-Vector<N> e3Dg::operator*(const Vector<M>& vec, const Matrix<M, N>& mat) {
+Vector<N> vgu::operator*(const Vector<M>& vec, const Matrix<M, N>& mat) {
 	Vector<N> result;
 	for (int i = 0; i < M; ++i) {
 		for (int j = 0; j < N; ++j) {
@@ -132,7 +132,7 @@ Vector<N> e3Dg::operator*(const Vector<M>& vec, const Matrix<M, N>& mat) {
 }
 
 template <unsigned int M, unsigned int N>
-Vector<M> e3Dg::operator*(const Matrix<M, N>& mat, const Vector<N>& vec) {
+Vector<M> vgu::operator*(const Matrix<M, N>& mat, const Vector<N>& vec) {
 	Vector<M> result;
 	for (int i = 0; i < M; ++i) {
 		for (int j = 0; j < N; ++j) {

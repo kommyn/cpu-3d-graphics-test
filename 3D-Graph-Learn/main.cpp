@@ -13,8 +13,8 @@
 
 class Model3D {
 private:
-	std::vector<e3Dg::Vector3f> m_vertices;
-	std::vector<e3Dg::Vector2f> m_textureCoords;
+	std::vector<vgu::Vector3f> m_vertices;
+	std::vector<vgu::Vector2f> m_textureCoords;
 public:
 	Model3D(const std::string& filePath) {
 		std::ifstream file;
@@ -30,7 +30,7 @@ public:
 				if (line[0] == 'v') {
 					switch (line[1]) {
 					case 't': {
-						e3Dg::Vector2f texVec;
+						vgu::Vector2f texVec;
 						sstr >> junk >> junk >> texVec.coord.x >> texVec.coord.y;
 						m_textureCoords.push_back(texVec);
 						break;
@@ -38,7 +38,7 @@ public:
 					case 'n':
 						break;
 					default: {
-						e3Dg::Vector3f vertVec;
+						vgu::Vector3f vertVec;
 						sstr >> junk >> vertVec.coord.x >> vertVec.coord.y >> vertVec.coord.z;
 						m_vertices.push_back(vertVec);
 					}
@@ -63,11 +63,11 @@ public:
 		return m_textureCoords.size();
 	}
 
-	e3Dg::Vector3f getVertex(const unsigned int& index) const {
+	vgu::Vector3f getVertex(const unsigned int& index) const {
 		return m_vertices[index];
 	}
 
-	e3Dg::Vector2f getTextureCoords(const unsigned int& index) const {
+	vgu::Vector2f getTextureCoords(const unsigned int& index) const {
 		return m_textureCoords[index];
 	}
 };

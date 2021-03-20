@@ -1,4 +1,4 @@
-using namespace e3Dg;
+using namespace vgu;
 
 template <unsigned char N>
 Vector<N>::Vector() {
@@ -38,31 +38,31 @@ const float& Vector<N>::operator[](int&& index) const {
 }
 
 template <unsigned char N>
-Vector<N>& e3Dg::operator+(Vector<N> A, const Vector<N>& B) {
+Vector<N>& vgu::operator+(Vector<N> A, const Vector<N>& B) {
 	for (int i = 0; i < N; ++i) A[i] += B[i];
 	return A;
 }
 
 template <unsigned char N>
-Vector<N>& e3Dg::operator-(Vector<N> A, const Vector<N>& B) {
+Vector<N>& vgu::operator-(Vector<N> A, const Vector<N>& B) {
 	for (int i = 0; i < N; ++i) A[i] -= B[i];
 	return A;
 }
 
 template <unsigned char N>
-Vector<N>& e3Dg::operator*(Vector<N> A, const float& value) {
+Vector<N>& vgu::operator*(Vector<N> A, const float& value) {
 	for (int i = 0; i < N; ++i) A[i] *= value;
 	return A;
 }
 
 template <unsigned char N>
-Vector<N>& e3Dg::operator*(const float& value, Vector<N> A) {
+Vector<N>& vgu::operator*(const float& value, Vector<N> A) {
 	for (int i = 0; i < N; ++i) A[i] *= value;
 	return A;
 }
 
 template <unsigned char N>
-Vector<N>& e3Dg::operator/(Vector<N> A, const float& value) {
+Vector<N>& vgu::operator/(Vector<N> A, const float& value) {
 	for (int i = 0; i < N; ++i) A[i] /= value;
 	return A;
 }

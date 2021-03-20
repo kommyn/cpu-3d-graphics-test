@@ -24,22 +24,22 @@ void Camera::SetSensetivity(const float& sensetivity) {
 	m_sensitivity = sensetivity;
 }
 
-const e3Dg::Matrix4x4& Camera::GetLookAtMatrix() const {
+const vgu::Matrix4x4& Camera::GetLookAtMatrix() const {
 	return m_lookAt;
 }
-const e3Dg::Vector3f& Camera::GetPos() const {
+const vgu::Vector3f& Camera::GetPos() const {
 	return m_pos;
 }
 
-const e3Dg::Vector3f& Camera::GetDir() const {
+const vgu::Vector3f& Camera::GetDir() const {
 	return m_dir;
 }
 
-const e3Dg::Vector3f& Camera::GetUp() const {
+const vgu::Vector3f& Camera::GetUp() const {
 	return m_up;
 }
 
-const e3Dg::Vector3f& Camera::GetRight() const {
+const vgu::Vector3f& Camera::GetRight() const {
 	return m_right;
 }
 
@@ -60,15 +60,15 @@ void Camera::RecalculateLookAtMatrix() {
 	const float pitchSin = std::sin(m_pitch);
 	const float yawCos = std::cos(m_yaw);
 	const float yawSin = std::sin(m_yaw);
-	m_dir = e3Dg::normalize(e3Dg::Vector3f(yawCos * pitchCos, pitchSin, yawSin * pitchCos));
-	e3Dg::Vector3f forward = -m_dir;
-	m_right = e3Dg::normalize(crossProduct(m_baseUp, forward));
-	m_up = e3Dg::crossProduct(m_right, forward);
+	m_dir = vgu::normalize(vgu::Vector3f(yawCos * pitchCos, pitchSin, yawSin * pitchCos));
+	vgu::Vector3f forward = -m_dir;
+	m_right = vgu::normalize(crossProduct(m_baseUp, forward));
+	m_up = vgu::crossProduct(m_right, forward);
 
 	m_lookAt = {
-		m_right[0], m_right[1], m_right[2], -e3Dg::dotProduct(m_pos, m_right),
-		m_up[0], m_up[1], m_up[2], -e3Dg::dotProduct(m_pos, m_up),
-		forward[0], forward[1], forward[2], -e3Dg::dotProduct(m_pos, forward),
+		m_right[0], m_right[1], m_right[2], -vgu::dotProduct(m_pos, m_right),
+		m_up[0], m_up[1], m_up[2], -vgu::dotProduct(m_pos, m_up),
+		forward[0], forward[1], forward[2], -vgu::dotProduct(m_pos, forward),
 		0, 0, 0, 1
 	};
 }

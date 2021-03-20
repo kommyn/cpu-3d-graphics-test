@@ -49,7 +49,7 @@ public:
 		// TODO: I think all things like ignoreVertice or vertices itself can be moved to Polygon struct, so I need to create it
 		bool ignoreVertice[VERTICES_NUM];
 		for (int i = 0; i < VERTICES_NUM; ++i) ignoreVertice[i] = false;
-		e3Dg::Vector3f vertices[VERTICES_NUM] = {
+		vgu::Vector3f vertices[VERTICES_NUM] = {
 			// front
 			{-0.5f, -0.5f, 0.0f }, { -0.5f, 0.5f, 0.0f }, { 0.5f, 0.5f, 0.0f },
 			{-0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f }, { 0.5f, -0.5f, 0.0f },
@@ -71,13 +71,13 @@ public:
 		};
 
 		// Creating of the array in homogenous coordinates (it is stupid, but i just wanted to draw cube as fast as I can)
-		e3Dg::Vector4f homogenVertices[VERTICES_NUM];
+		vgu::Vector4f homogenVertices[VERTICES_NUM];
 		for (int i = 0; i < VERTICES_NUM; ++i) {
-			e3Dg::Vector3f vertex = vertices[i];
+			vgu::Vector3f vertex = vertices[i];
 			homogenVertices[i] = { vertex[0], vertex[1], vertex[2], 1 };
 		}
 
-		e3Dg::Matrix4x4 modelMatrix = {
+		vgu::Matrix4x4 modelMatrix = {
 			1, 0, 0, 0,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
@@ -87,21 +87,21 @@ public:
 		const float rotCos = std::cos(m_time);
 		const float rotSin = std::sin(m_time);
 		// Rotation over OY axi
-		const e3Dg::Matrix4x4 yRotMat = {
+		const vgu::Matrix4x4 yRotMat = {
 			rotCos, 0, rotSin, 0,
 			0, 1, 0, 0,
 			-rotSin, 0, rotCos, 0,
 			0, 0, 0, 1
 		};
 		// Rotation over OX axis
-		const e3Dg::Matrix4x4 xRotMat = {
+		const vgu::Matrix4x4 xRotMat = {
 			1, 0, 0, 0,
 			0, rotCos, -rotSin, 0,
 			0, rotSin, rotCos, 0,
 			0, 0, 0, 1
 		};
 		// Rotation over OZ axis
-		const e3Dg::Matrix4x4 zRotMat = {
+		const vgu::Matrix4x4 zRotMat = {
 			rotCos, -rotSin, 0, 0,
 			rotSin, rotCos, 0, 0,
 			0, 0, 1, 0,
@@ -109,7 +109,7 @@ public:
 		};
 		// Scaling and translation of the vertices
 		const float scalingCoeff = 0.25;
-		const e3Dg::Matrix4x4 scalingMat = {
+		const vgu::Matrix4x4 scalingMat = {
 			scalingCoeff, 0, 0, 0,
 			0, scalingCoeff, 0, 0,
 			0, 0, scalingCoeff, 0.0f,
@@ -124,21 +124,21 @@ public:
 			homogenVertices[i] = modelMatrix * homogenVertices[i];
 			homogenVertices[i + 1] = modelMatrix * homogenVertices[i + 1];
 			homogenVertices[i + 2] = modelMatrix * homogenVertices[i + 2];
-			const e3Dg::Vector4f aH = homogenVertices[i];
-			const e3Dg::Vector4f bH = homogenVertices[i + 1];
-			const e3Dg::Vector4f cH = homogenVertices[i + 2];
+			const vgu::Vector4f aH = homogenVertices[i];
+			const vgu::Vector4f bH = homogenVertices[i + 1];
+			const vgu::Vector4f cH = homogenVertices[i + 2];
 			// Calculation of the polygon normal (fV - firstVec, sV - secondVec)
-			const e3Dg::Vector3f fV = e3Dg::vecToEuclid(bH - aH);
-			const e3Dg::Vector3f sV = e3Dg::vecToEuclid(cH - aH);
-			e3Dg::Vector3f normal = e3Dg::normalize(e3Dg::crossProduct(fV, sV));
+			const vgu::Vector3f fV = vgu::vecToEuclid(bH - aH);
+			const vgu::Vector3f sV = vgu::vecToEuclid(cH - aH);
+			vgu::Vector3f normal = vgu::normalize(vgu::crossProduct(fV, sV));
 
-			e3Dg::Vector3f vec = e3Dg::vecToEuclid(aH) - m_camera.GetPos();
-			const float dotProduct = e3Dg::dotProduct(normal, vec);
+			vgu::Vector3f vec = vgu::vecToEuclid(aH) - m_camera.GetPos();
+			const float dotProduct = vgu::dotProduct(normal, vec);
 			if (dotProduct > 0.0f) ignoreVertice[i] = true;
 			++j;
 		}
 
-		e3Dg::Matrix4x4 resultMatrix = {
+		vgu::Matrix4x4 resultMatrix = {
 			1, 0, 0, 0,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
@@ -147,7 +147,7 @@ public:
 
 		// cameraPos calculation
 		// TODO: Derive lookAt matrix for different coordinate systems (left and right) in order to undestand mathematical background
-		e3Dg::Matrix4x4 lookAtMatrix = m_camera.GetLookAtMatrix();
+		vgu::Matrix4x4 lookAtMatrix = m_camera.GetLookAtMatrix();
 		resultMatrix = lookAtMatrix * resultMatrix;
 
 		// Perspective projection calculation
@@ -158,7 +158,7 @@ public:
 		const float zFar = 100.0f;
 		const float zDiff = zFar - zNear;
 		// TODO: Derive this matrix for different coordinate systems (left and right) in order to undestand mathematical background
-		const e3Dg::Matrix4x4 perspectiveProjMatrix = {
+		const vgu::Matrix4x4 perspectiveProjMatrix = {
 			aspectRatio * FoVValue, 0, 0, 0,
 			0, FoVValue, 0, 0,
 			0, 0, (zFar + zNear) / zDiff, - (2 * zNear * zFar) / zDiff,
@@ -182,9 +182,9 @@ public:
 		j = 0;
 		for (int i = 0; i < VERTICES_NUM; i += 3) {
 			if (ignoreVertice[i] || ignoreVertice[i + 1] || ignoreVertice[i + 2]) continue;
-			const e3Dg::Vector4f aH = homogenVertices[i];
-			const e3Dg::Vector4f bH = homogenVertices[i + 1];
-			const e3Dg::Vector4f cH = homogenVertices[i + 2];
+			const vgu::Vector4f aH = homogenVertices[i];
+			const vgu::Vector4f bH = homogenVertices[i + 1];
+			const vgu::Vector4f cH = homogenVertices[i + 2];
 			// TODO: Move this to new method and think about how to pass data to the drawing functions
 			const Pixel a = { aH[0] * m_pixelsWNum + m_pixelsWNum * 0.5, aH[1] * m_pixelsHNum + m_pixelsHNum * 0.5, { 255, 0, 0 } };
 			const Pixel b = { bH[0] * m_pixelsWNum + m_pixelsWNum * 0.5, bH[1] * m_pixelsHNum + m_pixelsHNum * 0.5, { 0, 255, 0 } };

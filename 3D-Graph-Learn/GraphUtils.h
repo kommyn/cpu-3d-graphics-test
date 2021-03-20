@@ -3,7 +3,7 @@
 #include "Matrix.h"
 
 // TODO: Maybe it is a good idea to make this file main node of all graph files
-namespace e3Dg {
+namespace vgu {
 	template <unsigned char N>
 	float dotProduct(const Vector<N>& A, const Vector<N>& B) {
 		float sum = 0;
