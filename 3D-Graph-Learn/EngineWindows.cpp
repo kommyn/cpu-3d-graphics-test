@@ -53,9 +53,6 @@ LRESULT CALLBACK EngineWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 		}
 		mainEngine->KeyPressHandler(mainEngine, wParam, lParam);
 		return 0;
-	case WM_MOUSEMOVE:
-		mainEngine->MouseMoveHandler(mainEngine, wParam, lParam);
-		return 0;
 	case WM_LBUTTONUP:
 	case WM_LBUTTONDOWN:
 		MouseClickHandler(mainEngine, wParam, lParam, MouseButton::LEFT);
@@ -106,7 +103,8 @@ void EngineWindows::MouseMoveHandler(EngineWindows* engine, WPARAM wParam, LPARA
 	status.middleDown = wParam & MK_MBUTTON;
 	status.xbutton1Down = wParam & MK_XBUTTON1;
 	status.xbutton2Down = wParam & MK_XBUTTON2;
-	engine->OnMouseMove(xPos, yPos, status);
+	engine->OnMouseMove(xPos, yPos);
+	std::cout << "ass" << std::endl;
 }
 
 #include <windowsx.h>
@@ -147,8 +145,8 @@ bool EngineWindows::CreateGameWindow(const int& screenWidth, const int& screenHe
 		L"EngineWindowClass",
 		L"Test 3D graph",
 		WS_OVERLAPPEDWINDOW,
-		100,
-		100,
+		0,
+		0,
 		m_screenWidth,
 		m_screenHeight,
 		NULL,
@@ -181,9 +179,6 @@ bool EngineWindows::CreateGameWindow(const int& screenWidth, const int& screenHe
 	if (!m_backBitmap) return HandleError(L"Creating DIB section error");
 	if (!SelectObject(m_backHdc, m_backBitmap)) return HandleError(L"DIB setting error");
 
-	RECT rect = { 100, 100, m_screenWidth + 100, m_screenHeight + 100 };
-	ClipCursor(&rect);
-
 	return true;
 }
 
@@ -209,10 +204,17 @@ void EngineWindows::StartGame() {
 			DispatchMessage(&m_msg);
 		}
 
+		OnMouseDetection();
 		OnDraw();
 
 		BitBlt(m_mainHdc, 0, 0, m_screenWidth, m_screenHeight, m_backHdc, 0, 0, SRCCOPY);
 	}
+}
+
+Point EngineWindows::GetScreenCoordinate(const Point& coord) const {
+	POINT clientCoord = { coord.x, coord.y };
+	ClientToScreen(m_hWnd, &clientCoord);
+	return { clientCoord.x, clientCoord.y };
 }
 
 bool EngineWindows::HandleError(const std::wstring& errorMessage) {
@@ -243,3 +245,19 @@ void EngineWindows::SetPixel(const Pixel& pixel) {
 		}
 	}
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// All methods for callbacks initiation
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void EngineWindows::OnMouseDetection() {
+	if (GetActiveWindow() != m_hWnd) return;
+
+	POINT cursorPos;
+	GetCursorPos(&cursorPos);
+	this->OnMouseMove(cursorPos.x, cursorPos.y);
+
+	// This is part of the screen centering logic, that should be moved to EngineBase class
+	Point screenCenter = GetScreenCoordinate({ (m_screenWidth) / 2, m_screenHeight / 2 });
+	SetCursorPos(screenCenter.x, screenCenter.y);
+}
+

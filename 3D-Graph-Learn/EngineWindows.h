@@ -66,8 +66,12 @@ public:
 	virtual void SetPixel(const Pixel& pixel) override;
 
 	void OnDraw() override {};
-	void OnMouseMove(const int& xPos, const int& yPos, const MouseFlagsStatus& status) override {};
+	void OnMouseMove(const int& xPos, const int& yPos) override {};
 	void OnMouseClick(const MouseButton& button, const int& xPos, const int& yPos, const MouseFlagsStatus& status) override {};
 	void OnKeyPress(const unsigned int& wParam, const bool& prevState, const bool& buttonState) override {};
 	void OnResize() override {};
+	// TODO: Move screen centering logic to virtual method in EngineBase class
+	void OnMouseDetection();
+
+	Point GetScreenCoordinate(const Point& coord) const override;
 };

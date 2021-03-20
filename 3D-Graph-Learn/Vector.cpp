@@ -112,6 +112,15 @@ Vector<N>& Vector<N>::operator/=(const float& value) {
 }
 
 template <unsigned char N>
+Vector<N>& Vector<N>::operator-() const {
+	Vector<N> result;
+	for (int i = 0; i < N; ++i) {
+		result[i] = -m_coords[i];
+	}
+	return result;
+}
+
+template <unsigned char N>
 float Vector<N>::dot(const Vector<N>& a) const {
 	float dotProduct = 0;
 	for (int i = 0; i < N; ++i) dotProduct += m_coords[i] * a[i];

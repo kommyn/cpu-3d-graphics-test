@@ -78,6 +78,7 @@ namespace e3Dg {
 		Vector<N>& operator-=(const Vector<N>& vector);
 		Vector<N>& operator*=(const float& value);
 		Vector<N>& operator/=(const float& value);
+		Vector<N>& operator-() const;
 
 		// TODO: Think about moving of this method to GrapUtils.h
 		float dot(const Vector<N>& a) const;

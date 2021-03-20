@@ -6,27 +6,7 @@
 #include "TexturesFactory.h"
 #include "Matrix.h"
 #include "GraphUtils.h"
-
-#ifndef M_PI
-#define M_PI       3.14159265358979323846
-#endif
-
-struct Polygon3Vert {
-	e3Dg::Vector3f coords[3];
-	e3Dg::Vector2f textCoords[3];
-};
-
-e3Dg::Matrix4x4 lookAtCalc(const e3Dg::Vector3f& from, const e3Dg::Vector3f& to, const e3Dg::Vector3f& tmp = e3Dg::Vector3f({ 0.0f, 1.0f, 0.0f }));
-
-template <unsigned char N>
-struct Polygon3v {
-	union {
-		e3Dg::Vector<N> vertices[3];
-		struct {
-			e3Dg::Vector<N> a, b, c;
-		};
-	};
-};
+#include "Camera.h"
 
 class Engine3D : public EngineWindows
 {
@@ -35,19 +15,10 @@ private:
 	void TexturedHalfTriangle(const Pixel& a, const Pixel& b);
 protected:
 	TexturesFactory m_texturesFact;
-	unsigned int m_buttonsStates[255];
-	// TODO: Move camera logic to another class, this class should only has functionality of 3D pipeline usage
-	e3Dg::Vector3f m_cameraPos;
-	e3Dg::Vector3f m_cameraForward;
-	e3Dg::Vector3f m_cameraUp;
-	e3Dg::Vector3f m_cameraRight;
-	float m_lastMouseX;
-	float m_lastMouseY;
-	bool m_firstRender;
-	float m_cameraPitch;
-	float m_cameraYaw;
-	float m_cameraSpeed;
-	bool m_cursorResetting;
+	bool m_buttonsStates[255];
+
+	// TODO: Remove this class out of here, it is just temporary solution
+	Camera m_camera;
 public:
 	Engine3D();
 	~Engine3D() = default;
@@ -58,92 +29,20 @@ public:
 	void TexturedTriangle(Pixel a, Pixel b, Pixel c, std::string filePath);
 	void VertexPipe();
 
-	void OnMouseMove(const int& xPos, const int& yPos, const MouseFlagsStatus& status) override {
-		// TODO: Add getting of the window size and border size to the EngineBase class
-		//       It is just test code, ti should be moved to another class
-		if (m_cursorResetting) {
-			m_cursorResetting = false;
-			return;
-		}
-		POINT point = { xPos, yPos };
-		std::cout << "Before: " << std::endl;
-		std::cout << "Point x: " << point.x << "; point y: " << point.y << std::endl;
-		ClientToScreen(m_hWnd, &point);
-		std::cout << "After: " << std::endl;
-		std::cout << "Point x: " << point.x << "; point y: " << point.y << std::endl;
-		RECT windowRect, clientRect;
-		GetWindowRect(m_hWnd, &windowRect);
-		GetClientRect(m_hWnd, &clientRect);
-		const int borderThickness = ((windowRect.right - windowRect.left) - clientRect.right) / 2;
-		const int borderThicknessTop = (windowRect.bottom - windowRect.top) - clientRect.bottom - borderThickness;
-		const int screenCenterX = (windowRect.right + windowRect.left) / 2;
-		const int screenCenterY = (windowRect.bottom + windowRect.top) / 2;
-		const int diffX = xPos + windowRect.left + borderThickness - screenCenterX;
-		const int diffY = yPos + windowRect.top + borderThicknessTop - screenCenterY;
-		//float diffX = xPos - m_lastMouseX;
-		//float diffY = yPos - m_lastMouseY;
-		std::cout << "diffX2: " << diffX << std::endl;
-		std::cout << "diffY2: " << diffY << std::endl;
-		if (!(diffX == 0 && diffY == 0)) {
-			if (m_firstRender) {
-				m_firstRender = false;
-				m_lastMouseX = xPos;
-				m_lastMouseY = yPos;
-			}
-			else {
-				m_lastMouseX = xPos;
-				m_lastMouseY = yPos;
-				const float divededPi = M_PI / 2;
-				m_cameraYaw -= diffX * 0.00025;
-				if (m_cameraYaw < 0) {
-					m_cameraYaw += 2 * M_PI;
-				}
-				if (m_cameraYaw >= 2 * M_PI) {
-					m_cameraYaw -= 2 * M_PI;
-				}
-				m_cameraPitch -= diffY * 0.00025;
-				if (m_cameraPitch < -divededPi) {
-					m_cameraPitch = -divededPi + 0.01;
-				}
-				if (m_cameraPitch > divededPi) {
-					m_cameraPitch = divededPi - 0.01;
-				}
-				const float pitchCos = std::cos(m_cameraPitch);
-				const float pitchSin = std::sin(m_cameraPitch);
-				const float yawCos = std::cos(m_cameraYaw);
-				const float yawSin = std::sin(m_cameraYaw);
-
-				m_cameraForward = e3Dg::normalize(e3Dg::Vector3f(yawCos * pitchCos, pitchSin, yawSin * pitchCos));
-			}
-
-			SetCursorPos(screenCenterX, screenCenterY);
-			m_cursorResetting = true;
-		}
+	void OnMouseMove(const int& xPos, const int& yPos) override {
+		Point screenCenter = GetScreenCoordinate({ (m_screenWidth) / 2, m_screenHeight / 2 });
+		int diffX = xPos - screenCenter.x;
+		int diffY = yPos - screenCenter.y;
+		if (diffX == 0 && diffY == 0) return;
+		m_camera.RecalculateAngles(diffX, diffY);
 	};
+
 	void OnKeyPress(const unsigned int& wParam, const bool& prevState, const bool& buttonState) override {
 		m_buttonsStates[wParam] = buttonState;
 	};
 
 	void OnDraw() override {
-		// TODO: Add rotatiion and move it to another class
-		// A button
-		if (m_buttonsStates[0x41]) {
-			e3Dg::Vector3f right = e3Dg::crossProduct(e3Dg::normalize(e3Dg::Vector3f({0, 1, 0})), m_cameraForward);
-			m_cameraPos = m_cameraPos + right * m_cameraSpeed * m_elapsedTime;
-		}
-		// D buton
-		if (m_buttonsStates[0x44]) {
-			e3Dg::Vector3f right = e3Dg::crossProduct(e3Dg::normalize(e3Dg::Vector3f({ 0, 1, 0 })), m_cameraForward);
-			m_cameraPos = m_cameraPos - right * m_cameraSpeed * m_elapsedTime;
-		}
-		// W button
-		if (m_buttonsStates[0x57]) {
-			m_cameraPos = m_cameraPos - m_cameraForward * m_cameraSpeed * m_elapsedTime;
-		}
-		// S button
-		if (m_buttonsStates[0x53]) {
-			m_cameraPos = m_cameraPos + m_cameraForward * m_cameraSpeed * m_elapsedTime;
-		}
+		m_camera.RecalculatePosition({ m_buttonsStates[0x41], m_buttonsStates[0x44], m_buttonsStates[0x57], m_buttonsStates[0x53] }, m_elapsedTime);
 		
 		const int VERTICES_NUM = 36;
 		// It is a sratch of future 3D edngine pipleine
@@ -233,7 +132,7 @@ public:
 			const e3Dg::Vector3f sV = e3Dg::vecToEuclid(cH - aH);
 			e3Dg::Vector3f normal = e3Dg::normalize(e3Dg::crossProduct(fV, sV));
 
-			e3Dg::Vector3f vec = e3Dg::vecToEuclid(aH) - m_cameraPos;
+			e3Dg::Vector3f vec = e3Dg::vecToEuclid(aH) - m_camera.GetPos();
 			const float dotProduct = e3Dg::dotProduct(normal, vec);
 			if (dotProduct > 0.0f) ignoreVertice[i] = true;
 			++j;
@@ -248,7 +147,7 @@ public:
 
 		// cameraPos calculation
 		// TODO: Derive lookAt matrix for different coordinate systems (left and right) in order to undestand mathematical background
-		e3Dg::Matrix4x4 lookAtMatrix = lookAtCalc(m_cameraPos, m_cameraPos + m_cameraForward);
+		e3Dg::Matrix4x4 lookAtMatrix = m_camera.GetLookAtMatrix();
 		resultMatrix = lookAtMatrix * resultMatrix;
 
 		// Perspective projection calculation
@@ -272,7 +171,7 @@ public:
 			if (std::abs(homogenVertices[i].coord.w) >= 0.0001) {
 				homogenVertices[i] = homogenVertices[i] / homogenVertices[i].coord.w;
 				// TODO: Ignore vertice it is very bad realisation of clipping, it should be recreated
-				if (std::abs(homogenVertices[i].coord.x) > 1 || std::abs(homogenVertices[i].coord.y) > 1) ignoreVertice[i] = true;
+				if (std::abs(homogenVertices[i].coord.x) > 1 || std::abs(homogenVertices[i].coord.y) > 1 || std::abs(homogenVertices[i].coord.z) > 1) ignoreVertice[i] = true;
 			}
 			else {
 				ignoreVertice[i] = true;
@@ -295,16 +194,14 @@ public:
 			++j;
 		}
 
-		/*std::cout << "m_lastMouseX: " << m_lastMouseX << std::endl;
-		std::cout << "m_lastMouseY: " << m_lastMouseY << std::endl;
-		const Pixel first = { m_lastMouseX - 5, m_lastMouseY - 5, { 255, 0, 0 } };
-		const Pixel second = { m_lastMouseX - 5, m_lastMouseY + 5, { 0, 255, 0 } };
-		const Pixel third = { m_lastMouseX + 5, m_lastMouseY + 5, { 0, 0, 255 } };
+		/*const Pixel first = { m_lastMouseX - 5, m_lastMouseY - 5, { 255, 255, 255 } };
+		const Pixel second = { m_lastMouseX - 5, m_lastMouseY + 5, { 255, 255, 255 } };
+		const Pixel third = { m_lastMouseX + 5, m_lastMouseY + 5, { 255, 255, 255 } };
 		InterpolatedTriangle(first, second, third);
 		DrawTriangle(first, second, third);
-		const Pixel first1 = { m_lastMouseX - 5, m_lastMouseY - 5, { 255, 0, 0 } };
-		const Pixel second1 = { m_lastMouseX + 5, m_lastMouseY + 5, { 0, 255, 0 } };
-		const Pixel third1 = { m_lastMouseX + 5, m_lastMouseY - 5, { 0, 0, 255 } };
+		const Pixel first1 = { m_lastMouseX - 5, m_lastMouseY - 5, { 255, 255, 255 } };
+		const Pixel second1 = { m_lastMouseX + 5, m_lastMouseY + 5, { 255, 255, 255 } };
+		const Pixel third1 = { m_lastMouseX + 5, m_lastMouseY - 5, { 255, 255, 255 } };
 		InterpolatedTriangle(first1, second1, third1);
 		DrawTriangle(first1, second1, third1);*/
 	}
