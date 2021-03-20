@@ -8,6 +8,52 @@
 #include "GraphUtils.h"
 #include "Camera.h"
 
+// TODO: Think about creating template class from this and moving all realisation into .cpp file
+// TODO: Also I think I should create new utils file, call it like GraphUtils3D and move all 3D calc (including polygon class or struct) logic into it
+// TODO: Create util functions for matrix base transformations (rotation, translation, scaling and something else)
+struct Polygon3P {
+	vgu::Vector4f first, second, third;
+	bool ignorePolygon;
+
+	friend Polygon3P operator*(const vgu::Matrix4x4& matrix, Polygon3P polygon) {
+		polygon.first = matrix * polygon.first;
+		polygon.second = matrix * polygon.second;
+		polygon.third = matrix * polygon.third;
+		return polygon;
+	}
+
+	vgu::Vector3f GetNormal() {
+		const vgu::Vector3f fV = vgu::vecToEuclid(second - first);
+		const vgu::Vector3f sV = vgu::vecToEuclid(third - first);
+		return vgu::crossProduct(fV, sV);
+	}
+
+	void PerspectiveDivision() {
+		if (ignorePolygon) return;
+		vgu::Vector4f points[3] = { first, second, third };
+		for (int i = 0; i < 3; ++i) {
+			if (points[i].coord.w > 0.0001) {
+				points[i] /= points[i].coord.w;
+				if (std::abs(points[i].coord.x) > 1 ||
+					std::abs(points[i].coord.y) > 1 ||
+					std::abs(points[i].coord.z) > 1) {
+					ignorePolygon = true;
+					return;
+				}
+			}
+			else {
+				ignorePolygon = true;
+				return;
+			}
+		}
+		first = points[0];
+		second = points[1];
+		third = points[2];
+	}
+};
+
+// TODO: Add method for drawing filled triangle, and think about opportunity of changing all drawig methods parameters to something like Polygon3P or 
+//       something like this
 class Engine3D : public EngineWindows
 {
 private:
@@ -44,38 +90,28 @@ public:
 	void OnDraw() override {
 		m_camera.RecalculatePosition({ m_buttonsStates[0x41], m_buttonsStates[0x44], m_buttonsStates[0x57], m_buttonsStates[0x53] }, m_elapsedTime);
 		
-		const int VERTICES_NUM = 36;
-		// It is a sratch of future 3D edngine pipleine
-		// TODO: I think all things like ignoreVertice or vertices itself can be moved to Polygon struct, so I need to create it
-		bool ignoreVertice[VERTICES_NUM];
-		for (int i = 0; i < VERTICES_NUM; ++i) ignoreVertice[i] = false;
-		vgu::Vector3f vertices[VERTICES_NUM] = {
+		// It is a scratch of future 3D edngine pipleine
+		const unsigned int POLYGONS_NUM = 12;
+		Polygon3P polygons[12] = {
 			// front
-			{-0.5f, -0.5f, 0.0f }, { -0.5f, 0.5f, 0.0f }, { 0.5f, 0.5f, 0.0f },
-			{-0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f }, { 0.5f, -0.5f, 0.0f },
+			{{ -0.5f, -0.5f, 0.0f, 1.0f }, { -0.5f, 0.5f, 0.0f, 1.0f }, { 0.5f, 0.5f, 0.0f, 1.0f }},
+			{{ -0.5f, -0.5f, 0.0f, 1.0f }, { 0.5f, 0.5f, 0.0f, 1.0f }, { 0.5f, -0.5f, 0.0f, 1.0f } },
 			// back
-			{-0.5f, -0.5f, 1.0f}, { 0.5f, 0.5f, 1.0f }, { -0.5f, 0.5f, 1.0f },
-			{-0.5f, -0.5f, 1.0f}, { 0.5f, -0.5f, 1.0f }, { 0.5f, 0.5f, 1.0f },
+			{{ -0.5f, -0.5f, 1.0f, 1.0f }, { 0.5f, 0.5f, 1.0f, 1.0f }, { -0.5f, 0.5f, 1.0f, 1.0f }},
+			{{ -0.5f, -0.5f, 1.0f, 1.0f }, { 0.5f, -0.5f, 1.0f, 1.0f }, { 0.5f, 0.5f, 1.0f, 1.0f }},
 			// top
-			{ -0.5f, 0.5f, 0.0f }, { -0.5f, 0.5f, 1.0f }, { 0.5f, 0.5f, 1.0f },
-			{ -0.5f, 0.5f, 0.0f }, { 0.5f, 0.5f, 1.0f }, { 0.5f, 0.5f, 0.0f },
+			{{ -0.5f, 0.5f, 0.0f, 1.0f }, { -0.5f, 0.5f, 1.0f, 1.0f }, { 0.5f, 0.5f, 1.0f, 1.0f }},
+			{{ -0.5f, 0.5f, 0.0f, 1.0f }, { 0.5f, 0.5f, 1.0f, 1.0f }, { 0.5f, 0.5f, 0.0f, 1.0f }},
 			// bottom
-			{ -0.5f, -0.5f, 0.0f }, { 0.5f, -0.5f, 1.0f }, { -0.5f, -0.5f, 1.0f },
-			{ -0.5f, -0.5f, 0.0f }, { 0.5f, -0.5f, 0.0f }, { 0.5f, -0.5f, 1.0f },
+			{{ -0.5f, -0.5f, 0.0f, 1.0f }, { 0.5f, -0.5f, 1.0f, 1.0f }, { -0.5f, -0.5f, 1.0f, 1.0f }},
+			{{ -0.5f, -0.5f, 0.0f, 1.0f }, { 0.5f, -0.5f, 0.0f, 1.0f }, { 0.5f, -0.5f, 1.0f, 1.0f }},
 			// left
-			{ -0.5f, -0.5f, 1.0f }, { -0.5f, 0.5f, 1.0f }, { -0.5f, 0.5f, 0.0f },
-			{ -0.5f, -0.5f, 1.0f }, { -0.5f, 0.5f, 0.0f }, { -0.5f, -0.5f, 0.0f },
+			{{ -0.5f, -0.5f, 1.0f, 1.0f }, { -0.5f, 0.5f, 1.0f, 1.0f }, { -0.5f, 0.5f, 0.0f, 1.0f }},
+			{{ -0.5f, -0.5f, 1.0f, 1.0f }, { -0.5f, 0.5f, 0.0f, 1.0f }, { -0.5f, -0.5f, 0.0f, 1.0f }},
 			// right
-			{ 0.5f, -0.5f, 1.0f }, { 0.5f, 0.5f, 0.0f }, { 0.5f, 0.5f, 1.0f },
-			{ 0.5f, -0.5f, 1.0f }, { 0.5f, -0.5f, 0.0f }, { 0.5f, 0.5f, 0.0f }
+			{{ 0.5f, -0.5f, 1.0f, 1.0f }, { 0.5f, 0.5f, 0.0f, 1.0f }, { 0.5f, 0.5f, 1.0f, 1.0f }},
+			{{ 0.5f, -0.5f, 1.0f, 1.0f }, { 0.5f, -0.5f, 0.0f, 1.0f }, { 0.5f, 0.5f, 0.0f, 1.0f }}
 		};
-
-		// Creating of the array in homogenous coordinates (it is stupid, but i just wanted to draw cube as fast as I can)
-		vgu::Vector4f homogenVertices[VERTICES_NUM];
-		for (int i = 0; i < VERTICES_NUM; ++i) {
-			vgu::Vector3f vertex = vertices[i];
-			homogenVertices[i] = { vertex[0], vertex[1], vertex[2], 1 };
-		}
 
 		vgu::Matrix4x4 modelMatrix = {
 			1, 0, 0, 0,
@@ -117,25 +153,14 @@ public:
 		};
 		modelMatrix = scalingMat * modelMatrix;
 
-		// TODO: Undertand math under this part of the pipeline 
+		// TODO: Undertand math under this part of the pipeline
 		// normals calculation
-		int j = 0;
-		for (int i = 0; i < VERTICES_NUM; i += 3) {
-			homogenVertices[i] = modelMatrix * homogenVertices[i];
-			homogenVertices[i + 1] = modelMatrix * homogenVertices[i + 1];
-			homogenVertices[i + 2] = modelMatrix * homogenVertices[i + 2];
-			const vgu::Vector4f aH = homogenVertices[i];
-			const vgu::Vector4f bH = homogenVertices[i + 1];
-			const vgu::Vector4f cH = homogenVertices[i + 2];
-			// Calculation of the polygon normal (fV - firstVec, sV - secondVec)
-			const vgu::Vector3f fV = vgu::vecToEuclid(bH - aH);
-			const vgu::Vector3f sV = vgu::vecToEuclid(cH - aH);
-			vgu::Vector3f normal = vgu::normalize(vgu::crossProduct(fV, sV));
-
-			vgu::Vector3f vec = vgu::vecToEuclid(aH) - m_camera.GetPos();
+		for (int i = 0; i < POLYGONS_NUM; ++i) {
+			polygons[i] = modelMatrix * polygons[i];
+			const vgu::Vector3f normal = polygons[i].GetNormal();
+			const vgu::Vector3f vec = vgu::vecToEuclid(polygons[i].first) - m_camera.GetPos();
 			const float dotProduct = vgu::dotProduct(normal, vec);
-			if (dotProduct > 0.0f) ignoreVertice[i] = true;
-			++j;
+			if (dotProduct > 0) polygons[i].ignorePolygon = true;
 		}
 
 		vgu::Matrix4x4 resultMatrix = {
@@ -166,32 +191,22 @@ public:
 		};
 		resultMatrix = perspectiveProjMatrix * resultMatrix;
 
-		for (int i = 0; i < VERTICES_NUM; ++i) {
-			homogenVertices[i] = resultMatrix * homogenVertices[i];
-			if (std::abs(homogenVertices[i].coord.w) >= 0.0001) {
-				homogenVertices[i] = homogenVertices[i] / homogenVertices[i].coord.w;
-				// TODO: Ignore vertice it is very bad realisation of clipping, it should be recreated
-				if (std::abs(homogenVertices[i].coord.x) > 1 || std::abs(homogenVertices[i].coord.y) > 1 || std::abs(homogenVertices[i].coord.z) > 1) ignoreVertice[i] = true;
-			}
-			else {
-				ignoreVertice[i] = true;
-			}
+		for (int i = 0; i < POLYGONS_NUM; ++i) {
+			if (polygons[i].ignorePolygon) continue;
+			polygons[i] = resultMatrix * polygons[i];
+			polygons[i].PerspectiveDivision();
 		}
 
-		// Here are drawing logic: I just sequently get 3 vertices from the array and look at the ignoreVertice data
-		j = 0;
-		for (int i = 0; i < VERTICES_NUM; i += 3) {
-			if (ignoreVertice[i] || ignoreVertice[i + 1] || ignoreVertice[i + 2]) continue;
-			const vgu::Vector4f aH = homogenVertices[i];
-			const vgu::Vector4f bH = homogenVertices[i + 1];
-			const vgu::Vector4f cH = homogenVertices[i + 2];
-			// TODO: Move this to new method and think about how to pass data to the drawing functions
-			const Pixel a = { aH[0] * m_pixelsWNum + m_pixelsWNum * 0.5, aH[1] * m_pixelsHNum + m_pixelsHNum * 0.5, { 255, 0, 0 } };
-			const Pixel b = { bH[0] * m_pixelsWNum + m_pixelsWNum * 0.5, bH[1] * m_pixelsHNum + m_pixelsHNum * 0.5, { 0, 255, 0 } };
-			const Pixel c = { cH[0] * m_pixelsWNum + m_pixelsWNum * 0.5, cH[1] * m_pixelsHNum + m_pixelsHNum * 0.5, { 0, 0, 255 } };
+		// Drawing logic itself
+		// TODO: Do something with converting polygon data to pixels (maybe it is a good idea to write method for this in this class)
+		for (int i = 0; i < POLYGONS_NUM; ++i) {
+			if (polygons[i].ignorePolygon) continue;
+
+			const Pixel a = { polygons[i].first[0] * m_pixelsWNum + m_pixelsWNum * 0.5, polygons[i].first[1] * m_pixelsHNum + m_pixelsHNum * 0.5, { 255, 0, 0 } };
+			const Pixel b = { polygons[i].second[0] * m_pixelsWNum + m_pixelsWNum * 0.5, polygons[i].second[1] * m_pixelsHNum + m_pixelsHNum * 0.5, { 0, 255, 0 } };
+			const Pixel c = { polygons[i].third[0] * m_pixelsWNum + m_pixelsWNum * 0.5, polygons[i].third[1] * m_pixelsHNum + m_pixelsHNum * 0.5, { 0, 0, 255 } };
 			InterpolatedTriangle(a, b, c);
 			DrawTriangle(a, b, c);
-			++j;
 		}
 
 		/*const Pixel first = { m_lastMouseX - 5, m_lastMouseY - 5, { 255, 255, 255 } };
