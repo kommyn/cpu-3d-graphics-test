@@ -121,13 +121,6 @@ Vector<N>& Vector<N>::operator-() const {
 }
 
 template <unsigned char N>
-float Vector<N>::dot(const Vector<N>& a) const {
-	float dotProduct = 0;
-	for (int i = 0; i < N; ++i) dotProduct += m_coords[i] * a[i];
-	return dotProduct;
-}
-
-template <unsigned char N>
 float Vector<N>::length() const {
 	float sum = 0;
 	for (int i = 0; i < N; ++i) {

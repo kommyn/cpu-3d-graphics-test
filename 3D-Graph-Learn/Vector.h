@@ -60,8 +60,7 @@ namespace vgu {
 
 		// TODO: Find a way how to move this constructor to template file
 		template <typename ...T>
-		Vector(T... data) : m_coords{ static_cast<float>(data)... } {
-		}
+		Vector(T... data) : m_coords{ static_cast<float>(data)... } {}
 
 		// TODO: Think about adding of *= operator for Vector*Matrix multiplication
 		float& operator[](const int& index);
@@ -80,8 +79,6 @@ namespace vgu {
 		Vector<N>& operator/=(const float& value);
 		Vector<N>& operator-() const;
 
-		// TODO: Think about moving of this method to GrapUtils.h
-		float dot(const Vector<N>& a) const;
 		float length() const;
 		void display() const;
 	};

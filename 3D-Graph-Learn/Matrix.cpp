@@ -198,35 +198,3 @@ Matrix<N, M> Matrix<M, N>::transpose() const {
 	}
 	return result;
 }
-
-template <unsigned int M, unsigned int N>
-float Matrix<M, N>::det() const {
-	if (N != M) return 0;
-	return calcDet(m_values, M, N);
-}
-
-template <unsigned int M, unsigned int N>
-float Matrix<M, N>::calcDet(float* values, const int& sizeX, const int& sizeY) {
-	if (sizeX != sizeY) return 0;
-	if (sizeX == 1) return values[0];
-	if (sizeX == 2) return values[0] * values[3] - values[1] * values[2];
-	float sum = 0;
-	int subXSize = sizeX - 1;
-	int subYSize = sizeY - 1;
-	for (int i = 0; i < sizeX; ++i) {
-		int size = subXSize * subYSize;
-		float* submatrix = new float[size];
-		for (int j = 0; j < sizeX; ++j) {
-			if (j == i) continue;
-			int jVal = j > i ? j - 1 : j;
-			for (int k = 1; k < sizeY; ++k) {
-				int currSub = jVal + (k - 1) * subYSize;
-				submatrix[currSub] = values[j + k * sizeY];
-			}
-		}
-		int coeff = i % 2 == 0 ? 1 : -1;
-		sum += coeff * values[i] * calcDet(submatrix, subXSize, subYSize);
-		delete[] submatrix;
-	}
-	return sum;
-}

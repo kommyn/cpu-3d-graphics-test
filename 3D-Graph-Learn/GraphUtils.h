@@ -16,6 +16,13 @@ namespace vgu {
 		return A / A.length();
 	}
 
+	float calcDetRecursively(const float values[], const int& size);
+
+	template <unsigned char N>
+	float det(const Matrix<N, N>& mat) {
+		return calcDetRecursively(mat.m_values, N);
+	}
+
 	Vector3f crossProduct(const Vector3f& A, const Vector3f& B);
 
 	Vector4f vecToHomogen(const Vector3f& a);

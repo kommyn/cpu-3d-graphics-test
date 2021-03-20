@@ -30,8 +30,6 @@ namespace vgu {
 	// Class itself prototype
 	template <unsigned int M, unsigned int N>
 	class Matrix {
-	private:
-		float calcDet(float* values, const int& sizeX, const int& sizeY);
 	public:
 		float m_values[M * N];
 
@@ -106,8 +104,6 @@ namespace vgu {
 
 		// TODO: Think about moving of this method to GrapUtils.h
 		Matrix<N, M> transpose() const;
-		// TODO: Think about moving of this method to GrapUtils.h
-		float det() const;
 		void display() const;
 	};
 
