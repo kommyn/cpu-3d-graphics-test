@@ -84,7 +84,7 @@ void Camera::RecalculatePosition(const PressedMovingKeys& keys, const float& ela
 		m_pos -= m_dir * m_speed * elapsedTime;
 	}
 	if (keys.back) {
-		m_pos += m_dir * m_speed * elapsedTime;
+		m_pos += m_dir * (m_speed + 1) * elapsedTime;
 	}
 	RecalculateLookAtMatrix();
 }

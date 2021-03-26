@@ -108,6 +108,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -136,6 +137,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -146,6 +148,8 @@
     <ClCompile Include="GraphUtils.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="EngineWindow.cpp" />
+    <ClCompile Include="Model3D.cpp" />
+    <ClCompile Include="Polygon3P.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TexturesFactory.cpp" />
   </ItemGroup>
@@ -157,6 +161,8 @@
     <ClInclude Include="EngineWindows.h" />
     <ClInclude Include="GraphUtils.h" />
     <ClInclude Include="Matrix.h" />
+    <ClInclude Include="Model3D.h" />
+    <ClInclude Include="Polygon3P.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TexturesFactory.h" />
