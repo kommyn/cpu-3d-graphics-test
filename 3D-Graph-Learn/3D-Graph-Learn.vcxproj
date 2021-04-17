@@ -149,6 +149,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="EngineWindow.cpp" />
     <ClCompile Include="Model3D.cpp" />
+    <ClCompile Include="ModelsFactory.cpp" />
     <ClCompile Include="Polygon3P.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TexturesFactory.cpp" />
@@ -162,6 +163,7 @@
     <ClInclude Include="GraphUtils.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Model3D.h" />
+    <ClInclude Include="ModelsFactory.h" />
     <ClInclude Include="Polygon3P.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Texture.h" />

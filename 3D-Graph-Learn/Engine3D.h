@@ -10,6 +10,12 @@
 #include "TexturesFactory.h"
 #include "Camera.h"
 #include "Model3D.h"
+#include "ModelsFactory.h"
+
+
+// It is list of paths I use for testing
+//m_model.LoadModel("models/cottage/OBJ/cottage_obj.obj");
+//m_model.LoadModel("models/Izba/OBJ/Farmhouse OBJ.obj");
 
 // TODO: Add method for drawing textured triangle
 // TODO: I should clean code and begin writing clipping algorythm
@@ -21,14 +27,13 @@ private:
 	void FillHalfTriangle(const Pixel& a, const Pixel& b, const float coeffs[3], const double coeefsD[3]);
 protected:
 	TexturesFactory m_texturesFact;
+	ModelsFactory m_modelsFact;
 	bool m_buttonsStates[255];
 	double* m_zBuffer;
 	vgu::Matrix4x4 m_projectionMatrix;
 
 	// TODO: Remove this class out of here, it is just temporary solution
 	Camera m_camera;
-	// TODO: Remove this from here and add models factory. It is just temporary solution
-	Model3D m_model;
 public:
 	Engine3D();
 	~Engine3D() override {
@@ -64,7 +69,7 @@ public:
 	//       4. Normals calculation (I need to give oppertunity to enable/disable this)
 	//       5. Getting camera matrix !!!DONE!!!
 	//       6. Projection matrix calculation (maybe for this there will be a good idea to create abstract class of projection matrix
-	//          with memoization and recalculation of matrix itself only on some events defined by client) and perspectivi division
+	//          with memoization and recalculation of matrix itself only on some events defined by client) and perspectivi division !!!DONE!!!
 	//       7. Drawing logic itself
 	//       Every model or polygon (I don't know what will be better choice) must be passed as argument in all this functions
 	void OnDraw() override {
@@ -76,8 +81,9 @@ public:
 		
 		// It is a scratch of future 3D edngine pipleine
 		// TODO: Remove this, it is just a temporary solution
-		const size_t POLYGONS_NUM = m_model.GetPolygonsSize();
-		Polygon3P* polygons = m_model.GetPolygons();
+		auto model = m_modelsFact.LoadModel("models/Izba/OBJ/Farmhouse OBJ.obj");
+		const size_t POLYGONS_NUM = model->GetPolygonsSize();
+		Polygon3P* polygons = model->GetPolygons();
 		
 		vgu::Matrix4x4 modelMatrix = {
 			1, 0, 0, 0,
@@ -142,7 +148,7 @@ public:
 		// Drawing logic itself
 		for (size_t i = 0; i < POLYGONS_NUM; ++i) {
 			if (polygons[i].ignorePolygon) continue;
-			DrawTriangle(polygons[i]);
+			//DrawTriangle(polygons[i]);
 			FillTriangle(polygons[i]);
 		}
 

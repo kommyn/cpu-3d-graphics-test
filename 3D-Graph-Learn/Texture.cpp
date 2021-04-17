@@ -3,6 +3,7 @@
 Texture::Texture(const std::string& filePath) {
 	m_pixels = stbi_load(filePath.c_str(), &m_width, &m_height, &m_channels, 4);
 	m_size = m_width * m_height;
+	// TODO: This is placeholder. I need to change this for something better
 	if (!m_pixels) throw std::exception("I am error");
 }
 

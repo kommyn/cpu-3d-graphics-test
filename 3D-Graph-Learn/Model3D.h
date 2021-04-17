@@ -3,6 +3,7 @@
 #include <vector>
 #include <sstream>
 #include <fstream>
+#include <regex>
 
 #include "TexturesFactory.h"
 #include "Polygon3P.h"

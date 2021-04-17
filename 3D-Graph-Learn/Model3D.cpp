@@ -78,6 +78,9 @@ void Model3D::LoadModel(const std::string& filePath) {
 					}
 				}
 			}
+			if (std::regex_search(line, std::regex("usemtl"))) {
+
+			}
 		}
 	}
 	catch (std::ifstream::failure e) {

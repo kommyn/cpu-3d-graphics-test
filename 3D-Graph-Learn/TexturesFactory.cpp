@@ -21,7 +21,6 @@ Texture* TexturesFactory::LoadTexture(std::string filePath) {
 	else {
 		return texture_iter->second;
 	}
-	return NULL;
 }
 
 void TexturesFactory::RemoveTexture(std::string filePath) {

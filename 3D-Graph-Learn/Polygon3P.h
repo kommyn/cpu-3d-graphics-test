@@ -9,6 +9,7 @@ public:
 	// Public variables
 	vgu::Vector4f m_first, m_second, m_third;
 	vgu::Vector3f m_normal;
+	Texture* texture;
 	bool ignorePolygon;
 
 	// Contructors and destructors

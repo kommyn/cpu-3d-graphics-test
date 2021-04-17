@@ -1,8 +1,6 @@
 #include "Engine3D.h"
 
 Engine3D::Engine3D() {
-	//m_model.LoadModel("models/cottage/OBJ/cottage_obj.obj");
-	m_model.LoadModel("models/Izba/OBJ/Farmhouse OBJ.obj");
 	m_zBuffer = NULL;
 	// TODO: Add ShowCursor function to EngineBase class
 	ShowCursor(FALSE);
@@ -107,6 +105,7 @@ void Engine3D::FillHalfTriangle(const Pixel& a, const Pixel& b, const float coef
 	const double zBuffC = coeefsD[2];
 
 	const int segmentHeight = b.y - a.y;
+	const int numOfPixels = m_pixelsHNum * m_pixelsWNum;
 
 	if (segmentHeight != 0) {
 		float segmentA = (float)(b.x - a.x) / segmentHeight;
@@ -120,7 +119,7 @@ void Engine3D::FillHalfTriangle(const Pixel& a, const Pixel& b, const float coef
 				const double zBuffData = zBuffA * x + zBuffB * y + zBuffC;
 				// TODO: Fix problem with types in here
 				const unsigned long long zBuffPixelIndex = (long long)x + m_pixelsWNum * (long long)y;
-				if (m_zBuffer[zBuffPixelIndex] > zBuffData) {
+				if (zBuffPixelIndex < numOfPixels && m_zBuffer[zBuffPixelIndex] > zBuffData) {
 					const unsigned char color = (unsigned char)(lightIntensivity * 230);
 					SetPixel({ x, y, { color , color, color, 255} });
 					m_zBuffer[zBuffPixelIndex] = zBuffData;
