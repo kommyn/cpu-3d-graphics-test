@@ -23,8 +23,12 @@ int Texture::GetChannels() {
 	return m_channels;
 }
 
+int Texture::GetSize() {
+	return m_size;
+}
+
 RGBAColor* Texture::operator[](const int& index) {
-	if (index < m_size) return NULL;
+	if (index >= 4 * m_size || index < 0) return NULL;
 	unsigned char red = m_pixels[index + 2];
 	unsigned char green = m_pixels[index + 1];
 	unsigned char blue = m_pixels[index];

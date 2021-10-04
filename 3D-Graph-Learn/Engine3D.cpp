@@ -2,6 +2,7 @@
 
 Engine3D::Engine3D() {
 	m_zBuffer = NULL;
+	m_modelsFact.SetTexturesFactory(&m_texturesFact);
 	// TODO: Add ShowCursor function to EngineBase class
 	ShowCursor(FALSE);
 }
@@ -96,7 +97,7 @@ Engine3D::Engine3D() {
 	InterpolatedHalfTriangle(b, c, coeffs);
 }*/
 
-void Engine3D::FillHalfTriangle(const Pixel& a, const Pixel& b, const float coeffs[3], const double coeefsD[3]) {
+void Engine3D::FillHalfTriangle(const Pixel& a, const Pixel& b, const float coeffs[3], const double coeefsD[3], Texture* texture, const double coeffsT[6]) {
 	const float longestA = coeffs[0];
 	const float longestB = coeffs[1];
 	const float lightIntensivity = coeffs[2];
@@ -120,8 +121,35 @@ void Engine3D::FillHalfTriangle(const Pixel& a, const Pixel& b, const float coef
 				// TODO: Fix problem with types in here
 				const unsigned long long zBuffPixelIndex = (long long)x + m_pixelsWNum * (long long)y;
 				if (zBuffPixelIndex < numOfPixels && m_zBuffer[zBuffPixelIndex] > zBuffData) {
-					const unsigned char color = (unsigned char)(lightIntensivity * 230);
-					SetPixel({ x, y, { color , color, color, 255} });
+					unsigned char colorRed = (unsigned char)(lightIntensivity * 230);
+					unsigned char colorGreen = (unsigned char)(lightIntensivity * 230);
+					unsigned char colorBlue = (unsigned char)(lightIntensivity * 230);
+					// TODO: Fix this, it is look terrible
+					if (texture) {
+						long long textureX = coeffsT[0] * x + coeffsT[1] * y + coeffsT[2];
+						long long textureY = coeffsT[3] * x + coeffsT[4] * y + coeffsT[5];
+						if (textureX >= texture->GetWidth()) textureX = texture->GetWidth() - 1;
+						if (textureX < 0) textureX = 0;
+						if (textureY >= texture->GetHeight()) textureY = texture->GetHeight() - 1;
+						if (textureY < 0) textureY = 0;
+						textureY = texture->GetHeight() - textureY - 1;
+						const long long textureIndex = 4 * (textureX + textureY * texture->GetWidth());
+						/*if (textureIndex > texture->GetSize()) {
+							std::cout << "size: " << texture->GetSize() << std::endl;
+							std::cout << "textureIndex: " << textureIndex << std::endl;
+						}*/
+						/*std::cout << "Indeces data: " << std::endl;
+						std::cout << "textureX: " << textureX << std::endl;
+						std::cout << "textureY: " << textureY << std::endl;
+						std::cout << "textureIndex: " << textureIndex << std::endl;*/
+						RGBAColor* color = (*texture)[textureIndex];
+						if (color) {
+							colorRed = color->b * lightIntensivity;
+							colorGreen = color->g * lightIntensivity;
+							colorBlue = color->r * lightIntensivity;
+						}
+					}
+					SetPixel({ x, y, { colorRed, colorGreen, colorBlue, 255} });
 					m_zBuffer[zBuffPixelIndex] = zBuffData;
 				}
 			}
@@ -145,17 +173,22 @@ void Engine3D::FillTriangle(const Polygon3P& polygon) {
 	Pixel b = { static_cast<int>(B[0]), static_cast<int>(B[1]) };
 	Pixel c = { static_cast<int>(C[0]), static_cast<int>(C[1]) };
 
+	vgu::Vector2f At = polygon.m_tFirst, Bt = polygon.m_tSecond, Ct = polygon.m_tThird;
+
 	if (a.y > b.y) {
 		std::swap(a, b);
 		std::swap(A, B);
+		std::swap(At, Bt);
 	}
 	if (a.y > c.y) {
 		std::swap(a, c);
 		std::swap(A, C);
+		std::swap(At, Ct);
 	}
 	if (b.y > c.y) {
 		std::swap(b, c);
 		std::swap(B, C);
+		std::swap(Bt, Ct);
 	}
 
 	const double B0 = static_cast<double>(B[0]);
@@ -173,6 +206,39 @@ void Engine3D::FillTriangle(const Polygon3P& polygon) {
 	const double zBuffB = ((B0 - A0) * (C2 - A2) - (C0 - A0) * (B2 - A2)) / delta;
 	const double zBuffC = (A0 * (B1 * C2 - C1 * B2) - B0 * (A1 * C2 - C1 * A2) + C0 * (A1 * B2 - B1 * A2)) / delta;
 
+	// TODO: Do something with this calculation, it is really bad
+	double textureCoeffs[6] = { 0, 0, 0, 0, 0, 0 };
+	if (polygon.texture) {
+		const double AT0 = static_cast<double>(At[0]);
+		const double AT1 = static_cast<double>(At[1]);
+		const double BT0 = static_cast<double>(Bt[0]);
+		const double BT1 = static_cast<double>(Bt[1]);
+		const double CT0 = static_cast<double>(Ct[0]);
+		const double CT1 = static_cast<double>(Ct[1]);
+		// Ax
+		textureCoeffs[0] = ((BT0 - AT0) * (C1 - A1) - (CT0 - AT0) * (B1 - A1)) / delta;
+		// Bx
+		textureCoeffs[1] = ((B0 - A0) * (CT0 - AT0) - (C0 - A0) * (BT0 - AT0)) / delta;
+		// Cx
+		textureCoeffs[2] = (A0 * (B1 * CT0 - C1 * BT0) - B0 * (A1 * CT0 - C1 * AT0) + C0 * (A1 * BT0 - B1 * AT0)) / delta;
+		// Ay
+		textureCoeffs[3] = ((BT1 - AT1) * (C1 - A1) - (CT1 - AT1) * (B1 - A1)) / delta;
+		// By
+		textureCoeffs[4] = ((B0 - A0) * (CT1 - AT1) - (C0 - A0) * (BT1 - AT1)) / delta;
+		// Cy
+		textureCoeffs[5] = (A0 * (B1 * CT1 - C1 * BT1) - B0 * (A1 * CT1 - C1 * AT1) + C0 * (A1 * BT1 - B1 * AT1)) / delta;
+		/*std::cout << "Test: " << std::endl;
+		std::cout << "First point: (" << A0 << ", " << A1 << ");" << std::endl;
+		std::cout << "Second point: (" << B0 << ", " << B1 << ");" << std::endl;
+		std::cout << "Third point: (" << C0 << ", " << C1 << ");" << std::endl;
+		std::cout << "First t point: (" << AT0 << ", " << AT1 << ");" << std::endl;
+		std::cout << "Second t point: (" << BT0 << ", " << BT1 << ");" << std::endl;
+		std::cout << "Third t point: (" << CT0 << ", " << CT1 << ");" << std::endl;
+		std::cout << "First t point: (" << textureCoeffs[0] * A0 + textureCoeffs[1] * A1 + textureCoeffs[2] << ", " << textureCoeffs[3] * A0 + textureCoeffs[4] * A1 + textureCoeffs[5] << ");" << std::endl;
+		std::cout << "Second t point: (" << textureCoeffs[0] * B0 + textureCoeffs[1] * B1 + textureCoeffs[2] << ", " << textureCoeffs[3] * B0 + textureCoeffs[4] * B1 + textureCoeffs[5] << ");" << std::endl;
+		std::cout << "Third t point: (" << textureCoeffs[0] * C0 + textureCoeffs[1] * C1 + textureCoeffs[2] << ", " << textureCoeffs[3] * C0 + textureCoeffs[4] * C1 + textureCoeffs[5] << ");" << std::endl;*/
+	}
+
 	const float lightIntensivity = (1 - vgu::dotProduct(lightDir, polygon.m_normal)) * 0.5f;
 
 	const float longestA = (float)(c.x - a.x) / (c.y - a.y);
@@ -180,8 +246,11 @@ void Engine3D::FillTriangle(const Polygon3P& polygon) {
 	const float coeffs[3] = { longestA, longestB, lightIntensivity };
 	const double coeefsD[3] = { zBuffA, zBuffB, zBuffC };
 
-	FillHalfTriangle(a, b, coeffs, coeefsD);
-	FillHalfTriangle(b, c, coeffs, coeefsD);
+	/*std::cout << "Result: " << std::endl;
+	std::cout << "Rar: " << polygon.texture << std::endl;*/
+	
+	FillHalfTriangle(a, b, coeffs, coeefsD, polygon.texture, textureCoeffs);
+	FillHalfTriangle(b, c, coeffs, coeefsD, polygon.texture, textureCoeffs);
 }
 
 void Engine3D::DrawLine(Pixel a, Pixel b, const double coeffs[3]) {
@@ -268,6 +337,7 @@ void Engine3D::DrawTriangle(const Polygon3P& polygon) {
 	const double zBuffA = ((B2 - A2) * (C1 - A1) - (C2 - A2) * (B1 - A1)) / delta;
 	const double zBuffB = ((B0 - A0) * (C2 - A2) - (C0 - A0) * (B2 - A2)) / delta;
 	const double zBuffC = (A0 * (B1 * C2 - C1 * B2) - B0 * (A1 * C2 - C1 * A2) + C0 * (A1 * B2 - B1 * A2)) / delta;
+
 	/*const vgu::Matrix2x2 deltaMatrix = {
 		B[0] - A[0], B[1] - A[1],
 		C[0] - A[0], C[1] - A[1]

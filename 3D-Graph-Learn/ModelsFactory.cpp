@@ -11,7 +11,8 @@ Model3D* ModelsFactory::LoadModel(const std::string& filePath) {
 	if (model_iter == m_models.end()) {
 		try {
 			Model3D* model = new Model3D();
-			model->LoadModel(filePath);
+			// TODO: Remove this. It is an temporary solution
+			model->LoadModel(filePath, m_texturesFactory);
 			m_models.insert({ filePath, model });
 			return model;
 		}
@@ -22,4 +23,8 @@ Model3D* ModelsFactory::LoadModel(const std::string& filePath) {
 	else {
 		return model_iter->second;
 	}
+}
+
+void ModelsFactory::SetTexturesFactory(TexturesFactory* texturesFactory) {
+	m_texturesFactory = texturesFactory;
 }

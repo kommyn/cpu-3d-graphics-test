@@ -21,6 +21,10 @@ public:
 	int GetWidth();
 	int GetHeight();
 	int GetChannels();
+	int GetSize();
+	// TODO: Looks like I get not correct data from this method. I should change it in two ways:
+	//       1. Getting correct data of red, green, blue and alpha
+	//       2. Get pixel data by index of this pixel, but not by the 4 * index
 	RGBAColor* operator[](const int& index);
 };
 

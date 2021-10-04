@@ -16,6 +16,8 @@
 // It is list of paths I use for testing
 //m_model.LoadModel("models/cottage/OBJ/cottage_obj.obj");
 //m_model.LoadModel("models/Izba/OBJ/Farmhouse OBJ.obj");
+//m_model.LoadModel("models/sample/OBJ/model.obj");
+//m_model.LoadModel("models/sample/OBJ/model-hr.obj");
 
 // TODO: Add method for drawing textured triangle
 // TODO: I should clean code and begin writing clipping algorythm
@@ -24,7 +26,9 @@ class Engine3D : public EngineWindows
 private:
 	void InterpolatedHalfTriangle(const Pixel& a, const Pixel& b, float* coeffs);
 	//void TexturedHalfTriangle(const Pixel& a, const Pixel& b);
-	void FillHalfTriangle(const Pixel& a, const Pixel& b, const float coeffs[3], const double coeefsD[3]);
+	// TODO: Fix this function args, they are too many and chaotic, I should fix this
+	// TODO: Also I don't like the way I am passing here texture, I shold rethink it
+	void FillHalfTriangle(const Pixel& a, const Pixel& b, const float coeffs[3], const double coeefsD[3], Texture* texture, const double coeffsT[6]);
 protected:
 	TexturesFactory m_texturesFact;
 	ModelsFactory m_modelsFact;
@@ -82,6 +86,7 @@ public:
 		// It is a scratch of future 3D edngine pipleine
 		// TODO: Remove this, it is just a temporary solution
 		auto model = m_modelsFact.LoadModel("models/Izba/OBJ/Farmhouse OBJ.obj");
+		// auto model = m_modelsFact.LoadModel("models/sample/OBJ/model-hr.obj");
 		const size_t POLYGONS_NUM = model->GetPolygonsSize();
 		Polygon3P* polygons = model->GetPolygons();
 		
@@ -97,6 +102,12 @@ public:
 			scalingCoeff, 0, 0, 0,
 			0, scalingCoeff, 0, 0,
 			0, 0, scalingCoeff, 0,
+			0, 0, 0, 1
+		};
+		const vgu::Matrix4x4 rotMat = {
+			1, 0, 0, 0,
+			0, 0, 1, 0,
+			0, -1, 0, 0,
 			0, 0, 0, 1
 		};
 		modelMatrix = scalingMat * modelMatrix;
