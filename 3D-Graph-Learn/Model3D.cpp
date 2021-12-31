@@ -220,6 +220,7 @@ void Model3D::LoadModel(const std::string& filePath, TexturesFactory* texturesFa
 				m_polygons[i] = { first, second, third, tFirst, tSecond, tThird };
 				m_polygons[i].CalculateNormal();
 				m_polygons[i].texture = faces[i].texture;
+				m_poligonsList.push_back(m_polygons[i]);
 			}
 		}
 	}
@@ -233,4 +234,8 @@ Polygon3P* Model3D::GetPolygons() {
 
 size_t Model3D::GetPolygonsSize() const {
 	return m_polygonsSize;
+}
+
+std::list<Polygon3P> Model3D::GetPolygonsList() {
+	return std::list<Polygon3P>(m_poligonsList.begin(), m_poligonsList.end());
 }

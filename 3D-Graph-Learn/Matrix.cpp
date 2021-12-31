@@ -12,7 +12,7 @@ Matrix<M, N>::Matrix() {
 }
 
 template <unsigned int M, unsigned int N>
-Matrix<M, N>::Matrix(const float& value) {
+Matrix<M, N>::Matrix(const double& value) {
 	const unsigned int size = M * N;
 	for (int i = 0; i < size; ++i) {
 		m_values[i] = value;
@@ -44,49 +44,48 @@ Matrix<M, N>& Matrix<M, N>::operator=(const Matrix<M, N>& mat) {
 }
 
 template <unsigned int M, unsigned int N>
-float& Matrix<M, N>::operator[](const int& index) {
+double& Matrix<M, N>::operator[](const int& index) {
 	return m_values[index];
 }
 
 template <unsigned int M, unsigned int N>
-float& Matrix<M, N>::operator[](int&& index) {
+double& Matrix<M, N>::operator[](int&& index) {
 	return m_values[index];
 }
 
 template <unsigned int M, unsigned int N>
-const float& Matrix<M, N>::operator[](const int& index) const {
+const double& Matrix<M, N>::operator[](const int& index) const {
 	return m_values[index];
 }
 
 template <unsigned int M, unsigned int N>
-const float& Matrix<M, N>::operator[](int&& index) const {
+const double& Matrix<M, N>::operator[](int&& index) const {
 	return m_values[index];
 }
 
 template <unsigned int M, unsigned int N>
-float& Matrix<M, N>::operator()(const int& mIndex, const int& nIndex) {
+double& Matrix<M, N>::operator()(const int& mIndex, const int& nIndex) {
 	return m_values[mIndex + M * nIndex];
 }
 
 template <unsigned int M, unsigned int N>
-float& Matrix<M, N>::operator()(int&& mIndex, int&& nIndex) {
+double& Matrix<M, N>::operator()(int&& mIndex, int&& nIndex) {
 	return m_values[mIndex + M * nIndex];
 }
 
 template <unsigned int M, unsigned int N>
-const float& Matrix<M, N>::operator()(const int& mIndex, const int& nIndex) const {
+const double& Matrix<M, N>::operator()(const int& mIndex, const int& nIndex) const {
 	return m_values[mIndex + M * nIndex];
 }
 
 template <unsigned int M, unsigned int N>
-const float& Matrix<M, N>::operator()(int&& mIndex, int&& nIndex) const {
+const double& Matrix<M, N>::operator()(int&& mIndex, int&& nIndex) const {
 	return m_values[mIndex + M * nIndex];
 }
 
 template <unsigned int M, unsigned int N>
 Matrix<M, N>& vgu::operator+(Matrix<M, N> A, const Matrix<M, N>& B) {
 	int size = M * N;
-	std::cout << "opeartor+" << std::endl;
 	for (int i = 0; i < size; ++i) {
 		A[i] += B[i];
 	}
@@ -103,7 +102,7 @@ Matrix<M, N>& vgu::operator-(Matrix<M, N> A, const Matrix<M, N>& B) {
 }
 
 template <unsigned int M, unsigned int N>
-Matrix<M, N>& vgu::operator*(Matrix<M, N> mat, const float& value) {
+Matrix<M, N>& vgu::operator*(Matrix<M, N> mat, const double& value) {
 	unsigned int size = M * N;
 	for (int i = 0; i < size; ++i) {
 		mat[i] *= value;
@@ -112,7 +111,7 @@ Matrix<M, N>& vgu::operator*(Matrix<M, N> mat, const float& value) {
 }
 
 template <unsigned int M, unsigned int N>
-Matrix<M, N>& vgu::operator*(const float& value, Matrix<M, N> mat) {
+Matrix<M, N>& vgu::operator*(const double& value, Matrix<M, N> mat) {
 	unsigned int size = M * N;
 	for (int i = 0; i < size; ++i) {
 		mat[i] *= value;
@@ -171,7 +170,7 @@ Matrix<M, N>& Matrix<M, N>::operator-=(const Matrix<M, N>& mat) {
 }
 
 template <unsigned int M, unsigned int N>
-Matrix<M, N>& Matrix<M, N>::operator*=(const float& value) {
+Matrix<M, N>& Matrix<M, N>::operator*=(const double& value) {
 	const unsigned int size = M * N;
 	for (unsigned int i = 0; i < size; ++i) {
 		m_values[i] *= value;
@@ -180,7 +179,7 @@ Matrix<M, N>& Matrix<M, N>::operator*=(const float& value) {
 }
 
 template <unsigned int M, unsigned int N>
-Matrix<M, N>& Matrix<M, N>::operator/=(const float& value) {
+Matrix<M, N>& Matrix<M, N>::operator/=(const double& value) {
 	const unsigned int size = M * N;
 	for (unsigned int i = 0; i < size; ++i) {
 		m_values[i] /= value;

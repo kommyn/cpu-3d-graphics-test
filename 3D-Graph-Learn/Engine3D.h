@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <limits>
+#include <queue>
 
 #include "EngineWindows.h"
 #include "TexturesFactory.h"
@@ -19,16 +20,31 @@
 //m_model.LoadModel("models/sample/OBJ/model.obj");
 //m_model.LoadModel("models/sample/OBJ/model-hr.obj");
 
+// TODO: Add linear interpolation function
+
+enum class Side {
+	TOP,
+	LEFT,
+	RIGHT,
+	BOTTOM
+};
+
+
+bool isPointOutOfScreen(const vgu::Vector4f& point);
+
+Polygon3P* clipPolygon(Polygon3P& polygon, int& size);
+Polygon3P* clipPolyg(Polygon3P& polygon, int& size, Side side = Side::BOTTOM);
+
 // TODO: Add method for drawing textured triangle
 // TODO: I should clean code and begin writing clipping algorythm
 class Engine3D : public EngineWindows
 {
 private:
-	void InterpolatedHalfTriangle(const Pixel& a, const Pixel& b, float* coeffs);
+	void InterpolatedHalfTriangle(const Pixel& a, const Pixel& b, double* coeffs);
 	//void TexturedHalfTriangle(const Pixel& a, const Pixel& b);
 	// TODO: Fix this function args, they are too many and chaotic, I should fix this
 	// TODO: Also I don't like the way I am passing here texture, I shold rethink it
-	void FillHalfTriangle(const Pixel& a, const Pixel& b, const float coeffs[3], const double coeefsD[3], Texture* texture, const double coeffsT[6]);
+	void FillHalfTriangle(const Pixel& a, const Pixel& b, const double coeffs[3], const double coeefsD[3], Texture* texture, const double coeffsT[6]);
 protected:
 	TexturesFactory m_texturesFact;
 	ModelsFactory m_modelsFact;
@@ -83,12 +99,37 @@ public:
 
 		m_camera.RecalculatePosition({ m_buttonsStates[0x41], m_buttonsStates[0x44], m_buttonsStates[0x57], m_buttonsStates[0x53] }, m_elapsedTime);
 		
-		// It is a scratch of future 3D edngine pipleine
+		// It is an scratch of future 3D edngine pipleine
 		// TODO: Remove this, it is just a temporary solution
 		auto model = m_modelsFact.LoadModel("models/Izba/OBJ/Farmhouse OBJ.obj");
 		// auto model = m_modelsFact.LoadModel("models/sample/OBJ/model-hr.obj");
-		const size_t POLYGONS_NUM = model->GetPolygonsSize();
-		Polygon3P* polygons = model->GetPolygons();
+
+		//const size_t POLYGONS_NUM = model->GetPolygonsSize();
+		//Polygon3P* polygons = model->GetPolygons();
+
+		const size_t POLYGONS_NUM = 1;
+		Polygon3P* polygons = new Polygon3P[12];
+		vgu::Vector4f p1 = { -1, 1, 0, 1 };
+		vgu::Vector4f p2 = { 1, -1, 0, 1 };
+		vgu::Vector4f p3 = { -1, -1, 0, 1 };
+		vgu::Vector4f p4 = { 1, 1, 0, 1 };
+		vgu::Vector4f p5 = { -1, 1, -1, 1 };
+		vgu::Vector4f p6 = { 1, -1, -1, 1 };
+		vgu::Vector4f p7 = { -1, -1, -1, 1 };
+		vgu::Vector4f p8 = { 1, 1, -1, 1 };
+		polygons[0] = { p1, p2, p3, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0, -1 } };
+		//polygons[1] = { p1, p4, p2, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0, -1 } };
+		//polygons[2] = { p5, p7, p6 };
+		//polygons[3] = { p5, p6, p8 };
+
+		/*size_t siz3e = 0;
+		for (size_t i = 0; i < POLYGONS_NUM; ++i) {
+			if (polygons[i].m_ignorePolygon) {
+				siz3e += 1;
+			}
+		}
+		std::cout << "Size: " << siz3e << std::endl;*/
+		//std::list<Polygon3P> polygonsList = model->GetPolygonsList();
 		
 		vgu::Matrix4x4 modelMatrix = {
 			1, 0, 0, 0,
@@ -97,7 +138,7 @@ public:
 			0, 0, 0, 1
 		};
 		// Scaling and translation of the vertices
-		const float scalingCoeff = 0.025;
+		const double scalingCoeff = 0.25;
 		const vgu::Matrix4x4 scalingMat = {
 			scalingCoeff, 0, 0, 0,
 			0, scalingCoeff, 0, 0,
@@ -114,13 +155,21 @@ public:
 
 		// TODO: Undertand math under this part of the pipeline
 		// normals calculation
-		for (size_t i = 0; i < POLYGONS_NUM; ++i) {
+		/*std::list<Polygon3P>::iterator iter = polygonsList.begin();
+		while (iter != polygonsList.end()) {
+			(*iter) = modelMatrix * (*iter);
+			(*iter).m_normal = vgu::normalize(vgu::vecToEuclid(modelMatrix * vgu::vecToHomogen((*iter).m_normal)));
+			const vgu::Vector3f vec = vgu::vecToEuclid((*iter).m_first) - m_camera.GetPos();
+			const double dotProduct = vgu::dotProduct((*iter).m_normal, vec);
+			if (dotProduct < 0) polygonsList.erase(iter++); else ++iter;
+		}*/
+		/*for (size_t i = 0; i < POLYGONS_NUM; ++i) {
 			polygons[i] = modelMatrix * polygons[i];
 			polygons[i].m_normal = vgu::normalize(vgu::vecToEuclid(modelMatrix * vgu::vecToHomogen(polygons[i].m_normal)));
 			const vgu::Vector3f vec = vgu::vecToEuclid(polygons[i].m_first) - m_camera.GetPos();
-			const float dotProduct = vgu::dotProduct(polygons[i].m_normal, vec);
+			const double dotProduct = vgu::dotProduct(polygons[i].m_normal, vec);
 			if (dotProduct < 0) polygons[i].ignorePolygon = true;
-		}
+		}*/
 
 		vgu::Matrix4x4 resultMatrix = {
 			1, 0, 0, 0,
@@ -132,15 +181,18 @@ public:
 		// cameraPos calculation
 		// TODO: Derive lookAt matrix for different coordinate systems (left and right) in order to undestand mathematical background
 		vgu::Matrix4x4 lookAtMatrix = m_camera.GetLookAtMatrix();
+		//std::cout << "Look at matrix: ";
+		//lookAtMatrix.display();
+		//std::cout << "\n\n";
 		resultMatrix = lookAtMatrix * resultMatrix;
 
 		// Perspective projection calculation
-		const float aspectRatio = (float)m_pixelsHNum / m_pixelsWNum;
-		const float FoV = static_cast<float>(M_PI / 4);
-		const float FoVValue = 1 / std::tan(FoV / 2);
-		const float zNear = 0.01f;
-		const float zFar = 100.0f;
-		const float zDiff = zFar - zNear;
+		const double aspectRatio = static_cast<double>(m_pixelsHNum - 1) / static_cast<double>(m_pixelsWNum - 1);
+		const double FoV = static_cast<double>(M_PI / 4);
+		const double FoVValue = 1 / std::tan(FoV / 2);
+		const double zNear = 0.01f;
+		const double zFar = 100.0f;
+		const double zDiff = zFar - zNear;
 		// TODO: Derive this matrix for different coordinate systems (left and right) in order to undestand mathematical background
 		const vgu::Matrix4x4 perspectiveProjMatrix = {
 			aspectRatio * FoVValue, 0, 0, 0,
@@ -150,17 +202,94 @@ public:
 		};
 		resultMatrix = perspectiveProjMatrix * resultMatrix;
 
-		for (size_t i = 0; i < POLYGONS_NUM; ++i) {
-			if (polygons[i].ignorePolygon) continue;
+		/*iter = polygonsList.begin();
+		while (iter != polygonsList.end()) {
+			(*iter) = resultMatrix * (*iter);
+			(*iter).PerspectiveDivision();
+			auto ignore = (*iter).ignorePolygon;
+			if (ignore) {
+				polygonsList.erase(iter++);
+			} else {
+				++iter;
+			}
+		}*/
+
+		/*for (size_t i = 0; i < POLYGONS_NUM; ++i) {
 			polygons[i] = resultMatrix * polygons[i];
 			polygons[i].PerspectiveDivision();
-		}
+			// TODO: Add here basis of cropping algorythm
+			if (polygons[i].ignorePolygon && polygons[i].m_cropPolygon) {
+			}
+		}*/
+
+		/*for (size_t i = 0; i < POLYGONS_NUM; ++i) {
+			vgu::Vector4f points[3] = { polygons[i].m_first, polygons[i].m_second, polygons[i].m_third };
+			for (size_t i = 0; i < 3; ++i) {
+
+			}
+		}*/
 
 		// Drawing logic itself
-		for (size_t i = 0; i < POLYGONS_NUM; ++i) {
+		/*for (auto polygon : polygonsList) {
+			if (polygon.ignorePolygon) {
+				std::cout << "Polygon ignored" << std::endl;
+				continue;
+			}
+			//DrawTriangle(polygons[i]);
+			FillTriangle(polygon);
+		}*/
+
+		/*for (size_t i = 0; i < POLYGONS_NUM; ++i) {
 			if (polygons[i].ignorePolygon) continue;
 			//DrawTriangle(polygons[i]);
 			FillTriangle(polygons[i]);
+		}*/
+
+		for (size_t i = 0; i < POLYGONS_NUM; ++i) {
+			polygons[i].m_ignorePolygon = false;
+			polygons[i].m_clipPolygon = false;
+			// Normals calculation
+			polygons[i] = modelMatrix * polygons[i];
+			polygons[i].m_normal = vgu::normalize(vgu::vecToEuclid(modelMatrix * vgu::vecToHomogen(polygons[i].m_normal)));
+			const vgu::Vector3f vec = vgu::vecToEuclid(polygons[i].m_first) - m_camera.GetPos();
+			const double dotProduct = vgu::dotProduct(polygons[i].m_normal, vec);
+			if (dotProduct < 0) continue;
+
+			// Multiplying resultMatrix of view and projection space on the polygons
+			polygons[i] = resultMatrix * polygons[i];
+			polygons[i].PerspectiveDivision();
+			// TODO: Add here basis of cropping algorythm
+			if (polygons[i].m_clipPolygon) {
+
+				//if (polygons[i].m_ignorePolygon) continue;
+				//DrawTriangle(polygons[i]);
+				//FillTriangle(polygons[i]);
+
+				/*std::queue<Polygon3P> croppedPolygons;
+				croppedPolygons.push(polygons[i]);*/
+				// TODO: Fix this function, this array shoud clean itself
+				int size = 0;
+				Polygon3P* polygon = clipPolyg(polygons[i], size);
+				std::cout << "Result size: " << size;
+				for (size_t k = 0; k < size; ++k) {
+					std::cout << "Out iteration: " << k << std::endl;
+					polygon[k].display();
+					/*std::cout << "polygon[" << k << "]: " << std::endl;
+					polygon[k].display();
+					polygon[k].m_first.display();
+					polygon[k].m_second.display();
+					polygon[k].m_third.display();
+					std::cout << std::endl;*/
+
+					FillTriangle(polygon[k]);
+				}
+				//delete[] polygon;
+			}
+			else {
+				//if (polygons[i].m_ignorePolygon) continue;
+				//DrawTriangle(polygons[i]);
+				FillTriangle(polygons[i]);
+			}
 		}
 
 		// TODO: Remove this, it is temporary solution just to see is everything working well
@@ -168,6 +297,7 @@ public:
 		delete[] m_zBuffer;
 	}
 };
+
 
 
 // TODO: I finally got the idea of the drawing pipeline. It shoul be splitted into 4 parts:

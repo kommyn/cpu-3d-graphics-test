@@ -104,7 +104,6 @@ void EngineWindows::MouseMoveHandler(EngineWindows* engine, WPARAM wParam, LPARA
 	status.xbutton1Down = wParam & MK_XBUTTON1;
 	status.xbutton2Down = wParam & MK_XBUTTON2;
 	engine->OnMouseMove(xPos, yPos);
-	std::cout << "ass" << std::endl;
 }
 
 #include <windowsx.h>

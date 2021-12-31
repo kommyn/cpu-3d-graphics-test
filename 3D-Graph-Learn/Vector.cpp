@@ -18,22 +18,22 @@ void Vector<N>::display() const {
 }
 
 template <unsigned char N>
-float& Vector<N>::operator[](const int& index) {
+double& Vector<N>::operator[](const int& index) {
 	return m_coords[index];
 }
 
 template <unsigned char N>
-float& Vector<N>::operator[](int&& index) {
+double& Vector<N>::operator[](int&& index) {
 	return m_coords[index];
 }
 
 template <unsigned char N>
-const float& Vector<N>::operator[](const int& index) const {
+const double& Vector<N>::operator[](const int& index) const {
 	return m_coords[index];
 }
 
 template <unsigned char N>
-const float& Vector<N>::operator[](int&& index) const {
+const double& Vector<N>::operator[](int&& index) const {
 	return m_coords[index];
 }
 
@@ -50,25 +50,25 @@ Vector<N>& vgu::operator-(Vector<N> A, const Vector<N>& B) {
 }
 
 template <unsigned char N>
-Vector<N>& vgu::operator*(Vector<N> A, const float& value) {
+Vector<N>& vgu::operator*(Vector<N> A, const double& value) {
 	for (int i = 0; i < N; ++i) A[i] *= value;
 	return A;
 }
 
 template <unsigned char N>
-Vector<N>& vgu::operator*(const float& value, Vector<N> A) {
+Vector<N>& vgu::operator*(const double& value, Vector<N> A) {
 	for (int i = 0; i < N; ++i) A[i] *= value;
 	return A;
 }
 
 template <unsigned char N>
-Vector<N>& vgu::operator/(Vector<N> A, const float& value) {
+Vector<N>& vgu::operator/(Vector<N> A, const double& value) {
 	for (int i = 0; i < N; ++i) A[i] /= value;
 	return A;
 }
 
 template <unsigned char N>
-Vector<N>& Vector<N>::operator=(std::initializer_list<float> list) {
+Vector<N>& Vector<N>::operator=(std::initializer_list<double> list) {
 	const unsigned int size = list.size() < N ? list.size() : N;
 	for (int i = 0; i < size; ++i) {
 		this->m_coords[i] = *(list.begin() + i);
@@ -96,7 +96,7 @@ Vector<N>& Vector<N>::operator-=(const Vector<N>& vector) {
 }
 
 template <unsigned char N>
-Vector<N>& Vector<N>::operator*=(const float& value) {
+Vector<N>& Vector<N>::operator*=(const double& value) {
 	for (int i = 0; i < N; ++i) {
 		m_coords[i] *= value;
 	}
@@ -104,7 +104,7 @@ Vector<N>& Vector<N>::operator*=(const float& value) {
 }
 
 template <unsigned char N>
-Vector<N>& Vector<N>::operator/=(const float& value) {
+Vector<N>& Vector<N>::operator/=(const double& value) {
 	for (int i = 0; i < N; ++i) {
 		m_coords[i] /= value;
 	}
@@ -121,8 +121,8 @@ Vector<N>& Vector<N>::operator-() const {
 }
 
 template <unsigned char N>
-float Vector<N>::length() const {
-	float sum = 0;
+double Vector<N>::length() const {
+	double sum = 0;
 	for (int i = 0; i < N; ++i) {
 		sum += m_coords[i] * m_coords[i];
 	}

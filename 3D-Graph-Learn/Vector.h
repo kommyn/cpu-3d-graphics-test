@@ -14,13 +14,13 @@ namespace vgu {
 	Vector<N>& operator-(Vector<N> A, const Vector<N>& B);
 
 	template <unsigned char N>
-	Vector<N>& operator*(Vector<N> A, const float& value);
+	Vector<N>& operator*(Vector<N> A, const double& value);
 
 	template <unsigned char N>
-	Vector<N>& operator*(const float& value, Vector<N> A);
+	Vector<N>& operator*(const double& value, Vector<N> A);
 
 	template <unsigned char N>
-	Vector<N>& operator/(Vector<N> A, const float& value);
+	Vector<N>& operator/(Vector<N> A, const double& value);
 
 	// It is coords template structure that are used for using in union of data with vectors of size 1, 2, 3, 4
 	template <unsigned int N>
@@ -28,22 +28,22 @@ namespace vgu {
 
 	template <>
 	struct Coords<1> {
-		float value;
+		double value;
 	};
 
 	template <>
 	struct Coords<2> {
-		float x, y;
+		double x, y;
 	};
 
 	template <>
 	struct Coords<3> {
-		float x, y, z;
+		double x, y, z;
 	};
 
 	template <>
 	struct Coords<4> {
-		float x, y, z, w;
+		double x, y, z, w;
 	};
 
 	// Vector class itself
@@ -51,7 +51,7 @@ namespace vgu {
 	class Vector {
 	public:
 		union {
-			float m_coords[N];
+			double m_coords[N];
 			Coords<N> coord;
 		};
 
@@ -60,26 +60,26 @@ namespace vgu {
 
 		// TODO: Find a way how to move this constructor to template file
 		template <typename ...T>
-		Vector(T... data) : m_coords{ static_cast<float>(data)... } {}
+		Vector(T... data) : m_coords{ static_cast<double>(data)... } {}
 
 		// TODO: Think about adding of *= operator for Vector*Matrix multiplication
-		float& operator[](const int& index);
-		float& operator[](int&& index);
-		const float& operator[](const int& index) const;
-		const float& operator[](int&& index) const;
-		Vector<N>& operator=(std::initializer_list<float> list);
+		double& operator[](const int& index);
+		double& operator[](int&& index);
+		const double& operator[](const int& index) const;
+		const double& operator[](int&& index) const;
+		Vector<N>& operator=(std::initializer_list<double> list);
 		friend Vector<N>& operator+ <>(Vector<N> A, const Vector<N>& B);
 		friend Vector<N>& operator- <>(Vector<N> A, const Vector<N>& B);
-		friend Vector<N>& operator* <>(Vector<N> A, const float& value);
-		friend Vector<N>& operator* <>(const float& value, Vector<N> A);
-		friend Vector<N>& operator/ <>(Vector<N> A, const float& value);
+		friend Vector<N>& operator* <>(Vector<N> A, const double& value);
+		friend Vector<N>& operator* <>(const double& value, Vector<N> A);
+		friend Vector<N>& operator/ <>(Vector<N> A, const double& value);
 		Vector<N>& operator+=(const Vector<N>& vector);
 		Vector<N>& operator-=(const Vector<N>& vector);
-		Vector<N>& operator*=(const float& value);
-		Vector<N>& operator/=(const float& value);
+		Vector<N>& operator*=(const double& value);
+		Vector<N>& operator/=(const double& value);
 		Vector<N>& operator-() const;
 
-		float length() const;
+		double length() const;
 		void display() const;
 	};
 

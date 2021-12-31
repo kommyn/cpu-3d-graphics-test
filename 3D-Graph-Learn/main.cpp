@@ -16,7 +16,7 @@ int main() {
 		std::cout << "ERROR::" << error.what() << std::endl;
 	}*/
 
-	if (engine.CreateGameWindow(1000, 1000, 1, 1)) {
+	if (engine.CreateGameWindow(1000, 1000, 4, 4)) {
 		engine.StartGame();
 	}
 

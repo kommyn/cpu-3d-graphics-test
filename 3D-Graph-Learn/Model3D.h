@@ -6,6 +6,7 @@
 #include <regex>
 #include <set>
 #include <filesystem>
+#include <list>
 
 #include "TexturesFactory.h"
 #include "Polygon3P.h"
@@ -36,6 +37,7 @@ private:
 	// TODO: Add here link to the textures factory that should be awailiable with the aggregation
 	size_t m_polygonsSize;
 	Polygon3P* m_polygons;
+	std::list<Polygon3P> m_poligonsList;
 public:
 	Model3D();
 	~Model3D();
@@ -50,5 +52,6 @@ public:
 	std::map<std::string, MtlData> GetMtlData(const std::string& mtlPath);
 	// TODO: I don't like this method because it is very heavy so I believe I must find another way of polygons "in place" calculation
 	Polygon3P* GetPolygons();
+	std::list<Polygon3P> GetPolygonsList();
 	size_t GetPolygonsSize() const;
 };

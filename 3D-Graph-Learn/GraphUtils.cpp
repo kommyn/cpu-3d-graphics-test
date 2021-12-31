@@ -19,14 +19,14 @@ Vector3f vgu::vecToEuclid(const Vector4f& A) {
 	return { A[0] / A[3], A[1] / A[3], A[2] / A[3] };
 }
 
-float vgu::calcDetRecursively(const float values[], const int& size) {
+double vgu::calcDetRecursively(const double values[], const int& size) {
 	if (size == 1) return values[0];
 	if (size == 2) return values[0] * values[3] - values[1] * values[2];
-	float sum = 0;
+	double sum = 0;
 	int subSize = size - 1;
 	int subArrSize = subSize * subSize;
 	for (int i = 0; i < size; ++i) {
-		float* submatrix = new float[subArrSize];
+		double* submatrix = new double[subArrSize];
 		for (int j = 0; j < size; ++j) {
 			if (j == i) continue;
 			int jVal = j > i ? j - 1 : j;
