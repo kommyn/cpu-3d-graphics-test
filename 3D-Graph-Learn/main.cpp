@@ -16,9 +16,33 @@ int main() {
 		std::cout << "ERROR::" << error.what() << std::endl;
 	}*/
 
-	if (engine.CreateGameWindow(1000, 1000, 4, 4)) {
+	if (engine.CreateGameWindow(1000, 1000, 1, 1)) {
 		engine.StartGame();
 	}
+
+	/*std::list<int> rar;
+
+	int i = 1;
+
+	rar.push_back(i);
+	i += 1;
+	rar.push_back(i);
+
+	std::list<int>::iterator rer = rar.begin();
+
+	for (rer = rar.begin(); rer != rar.end(); ++rer) {
+		std::cout << "I value: " << i << std::endl;
+		std::cout << "Ra: " << *rer << std::endl;
+		std::cout << "Begin: " << &(*rar.begin()) << std::endl;
+		std::cout << "End: " << &(*rar.end())<< std::endl;
+		std::cout << std::endl;
+		i += 1;
+		if (i < 10) {
+			rar.pop_front();
+			rar.push_back(i);
+		}
+		if (i >= 13) break;
+	}*/
 
 	return 0;
 }

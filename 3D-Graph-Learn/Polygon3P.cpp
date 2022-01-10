@@ -23,10 +23,13 @@ void Polygon3P::PerspectiveDivision() {
 			std::cout << "points[i].coord.z after " << points[i].coord.z << std::endl;
 			std::cout << "points[i].coord.w after " << points[i].coord.w << std::endl;*/
 			if (std::abs(points[i].coord.x) > 1 ||
-				std::abs(points[i].coord.y) > 1 ||
-				std::abs(points[i].coord.z) > 1) {
+				std::abs(points[i].coord.y) > 1) {
 				m_ignorePolygon = true;
 				m_clipPolygon = true;
+			}
+			if (std::abs(points[i].coord.z) > 1) {
+				m_ignorePolygon = true;
+				m_clipPolygon = false;
 			}
 		}
 		else {

@@ -119,7 +119,7 @@ void Engine3D::FillHalfTriangle(const Pixel& a, const Pixel& b, const double coe
 			for (int x = xMin; x <= xMax; ++x) {
 				const double zBuffData = zBuffA * x + zBuffB * y + zBuffC;
 				// TODO: Fix problem with types in here
-				const unsigned long long zBuffPixelIndex = (long long)x + (m_pixelsWNum - 1) * (long long)y;
+				const unsigned long long zBuffPixelIndex = (long long)x + (static_cast<long long>(m_pixelsWNum) - 1) * (long long)y;
 				if (zBuffPixelIndex < numOfPixels && m_zBuffer[zBuffPixelIndex] > zBuffData) {
 					unsigned char colorRed = (unsigned char)(lightIntensivity * 230);
 					unsigned char colorGreen = (unsigned char)(lightIntensivity * 230);
@@ -128,13 +128,12 @@ void Engine3D::FillHalfTriangle(const Pixel& a, const Pixel& b, const double coe
 					if (texture) {
 						long long textureX = coeffsT[0] * x + coeffsT[1] * y + coeffsT[2];
 						long long textureY = coeffsT[3] * x + coeffsT[4] * y + coeffsT[5];
-						if (textureX >= texture->GetWidth()) textureX = texture->GetWidth() - 1;
+						if (textureX >= texture->GetWidth()) textureX = static_cast<long long>(texture->GetWidth()) - 1;
 						if (textureX < 0) textureX = 0;
-						if (textureY >= texture->GetHeight()) textureY = texture->GetHeight() - 1;
+						if (textureY >= texture->GetHeight()) textureY = static_cast<long long>(texture->GetHeight()) - 1;
 						if (textureY < 0) textureY = 0;
 						textureY = texture->GetHeight() - textureY - 1;
 						const long long textureIndex = 4 * (textureX + textureY * texture->GetWidth());
-						// RGBAColor* color = (*texture)[textureIndex];
 						RGBAColor* color = (*texture)[textureIndex];
 						if (color) {
 							colorRed = color->b * lightIntensivity;
@@ -142,7 +141,7 @@ void Engine3D::FillHalfTriangle(const Pixel& a, const Pixel& b, const double coe
 							colorBlue = color->r * lightIntensivity;
 						}
 					}
-					SetPixel({ x, y, { 255, 255, 255, 255} });
+					SetPixel({ x, y, { colorRed, colorGreen, colorBlue, 255} });
 					m_zBuffer[zBuffPixelIndex] = zBuffData;
 				}
 			}
@@ -187,7 +186,7 @@ void Engine3D::FillTriangle(const Polygon3P& polygon) {
 	}
 
 	const double delta = (B[0] - A[0]) * (C[1] - A[1]) - (C[0] - A[0]) * (B[1] - A[1]);
-	if (std::abs(delta) < 0.001f) return;
+	if (std::abs(delta) < 0.000001f) return;
 	const double zBuffA = ((B[2] - A[2]) * (C[1] - A[1]) - (C[2] - A[2]) * (B[1] - A[1])) / delta;
 	const double zBuffB = ((B[0] - A[0]) * (C[2] - A[2]) - (C[0] - A[0]) * (B[2] - A[2])) / delta;
 	const double zBuffC = (A[0] * (B[1] * C[2] - C[1] * B[2]) - B[0] * (A[1] * C[2] - C[1] * A[2]) + C[0] * (A[1] * B[2] - B[1] * A[2])) / delta;
@@ -211,7 +210,7 @@ void Engine3D::FillTriangle(const Polygon3P& polygon) {
 
 	const double lightIntensivity = (1 - vgu::dotProduct(lightDir, polygon.m_normal)) * 0.5f;
 
-	const double longestA = (double)(c.x - a.x) / (c.y - a.y);
+	const double longestA = (double)((double)c.x - (double)a.x) / ((double)c.y - (double)a.y);
 	const double longestB = a.x - longestA * a.y;
 	const double coeffs[3] = { longestA, longestB, lightIntensivity };
 	const double coeefsD[3] = { zBuffA, zBuffB, zBuffC };
@@ -291,7 +290,7 @@ void Engine3D::DrawTriangle(const Polygon3P& polygon) {
 	}
 
 	const double delta = (B[0] - A[0]) * (C[1] - A[1]) - (C[0] - A[0]) * (B[1] - A[1]);
-	if (std::abs(delta) < 0.00001f) return;
+	if (std::abs(delta) < 0.0000001f) return;
 	const double zBuffA = ((B[2] - A[2]) * (C[1] - A[1]) - (C[2] - A[2]) * (B[1] - A[1])) / delta;
 	const double zBuffB = ((B[0] - A[0]) * (C[2] - A[2]) - (C[0] - A[0]) * (B[2] - A[2])) / delta;
 	const double zBuffC = (A[0] * (B[1] * C[2] - C[1] * B[2]) - B[0] * (A[1] * C[2] - C[1] * A[2]) + C[0] * (A[1] * B[2] - B[1] * A[2])) / delta;
@@ -311,87 +310,82 @@ bool isPointOutOfScreen(const vgu::Vector4f& point) {
 	return (point.coord.x > 1 || point.coord.x < -1 || point.coord.y > 1 || point.coord.y < -1);
 }
 
-vgu::Vector2f* calculateLineSectionCrossing(
-	const vgu::Vector2f& sectionPoint1,
-	const vgu::Vector2f& sectionPoint2,
-	const vgu::Vector2f& linePoint1,
-	const vgu::Vector2f& linePoint2) {
-	const double sectionA = sectionPoint2.coord.y - sectionPoint1.coord.y;
-	const double sectionB = sectionPoint1.coord.x - sectionPoint2.coord.x;
-	const double sectionC = - sectionPoint2.coord.x * sectionPoint1.coord.y + sectionPoint1.coord.x * sectionPoint2.coord.y;
-	const double lineA = linePoint2.coord.y - linePoint1.coord.y;
-	const double lineB = linePoint1.coord.x - linePoint2.coord.x;
-	const double lineC = - linePoint2.coord.x * linePoint1.coord.y + linePoint1.coord.x * linePoint2.coord.y;
 
-	double det = vgu::det(vgu::Matrix2x2({
-		sectionA, sectionB,
-		lineA, lineB
-	}));
-	std::cout << "Det: " << det << std::endl;
-	if (std::abs(det) < 0.000001) return new vgu::Vector2f({ sectionPoint1.coord.x, sectionPoint1.coord.y });
-
-	double x = vgu::det(vgu::Matrix2x2({
-		sectionC, sectionB,
-		lineC, lineB
-		})) / det;
-	double y = vgu::det(vgu::Matrix2x2({
-		sectionA, sectionC,
-		lineA, lineC
-		})) / det;
-
-	std::cout << "X: " << x << "\nY: " << y << std::endl;
-	std::cout << "Points: " << std::endl;
-	sectionPoint1.display();
-	sectionPoint2.display();
-	std::cout << "Check 1: ";
-	bool result = sectionPoint1[0] > sectionPoint2[0] ? (x < sectionPoint1[0] && x > sectionPoint2[0]) : (x > sectionPoint1[0] && x < sectionPoint2[0]);
-	std::cout << result << std::endl;
-
-	if (
-		(x < sectionPoint1.coord.x && x > sectionPoint2.coord.x) || (x < sectionPoint2.coord.x && x > sectionPoint1.coord.x) &&
-		(y < sectionPoint1.coord.y && y > sectionPoint2.coord.y) || (y < sectionPoint2.coord.y && y > sectionPoint1.coord.y)
-		) {
-		return new vgu::Vector2f({ x ,y });
-	}
-	else {
-		return nullptr;
-	}
+bool isPointBetween(const double& first, const double& second, const double& point) {
+	return (point <= first&& point >= second) || (point <= second && point >= first);
 }
 
-template <unsigned int N>
-vgu::Vector2f* calculateCrossWithFourLines(const vgu::Vector<N>& first, const vgu::Vector<N>& second, Side side) {
-	if (N < 2) return nullptr;
-	vgu::Vector2f planeFirst = { first.m_coords[0], first.m_coords[1] };
-	vgu::Vector2f planeSecond = { second.m_coords[0], second.m_coords[1] };
+vgu::Vector4f* calculateLinePlaneCrossing(
+	const vgu::Vector4f& sectionPoint1,
+	const vgu::Vector4f& sectionPoint2,
+	double A, double B, double C, double D) {
+	double A1 = sectionPoint2.coord.y - sectionPoint1.coord.y;
+	double B1 = sectionPoint1.coord.x - sectionPoint2.coord.x;
+	double C1 = 0;
+	double D1 = sectionPoint2.coord.x * sectionPoint1.coord.y - sectionPoint1.coord.x * sectionPoint2.coord.y;
+
+	const double A2 = 0;
+	const double B2 = sectionPoint2.coord.z - sectionPoint1.coord.z;
+	const double C2 = sectionPoint1.coord.y - sectionPoint2.coord.y;
+	const double D2 = sectionPoint2.coord.y * sectionPoint1.coord.z - sectionPoint1.coord.y * sectionPoint2.coord.z;
+
+	double det = vgu::det(vgu::Matrix3x3({
+		A1, B1, C1,
+		A2, B2, C2,
+		A, B, C
+	}));
+
+	if (std::abs(det) < 0.000001) {
+		A1 = sectionPoint2.coord.z - sectionPoint1.coord.z;
+		B1 = 0;
+		C1 = sectionPoint1.coord.x - sectionPoint2.coord.x;
+		D1 = sectionPoint2.coord.x * sectionPoint1.coord.z - sectionPoint1.coord.x * sectionPoint2.coord.z;
+		det = vgu::det(vgu::Matrix3x3({
+			A1, B1, C1,
+			A2, B2, C2,
+			A, B, C
+		}));
+	}
+
+	if (std::abs(det) < 0.000001) return nullptr;
+
+	const double x = vgu::det(vgu::Matrix3x3({
+		-D1, B1, C1,
+		-D2, B2, C2,
+		-D, B, C
+	})) / det;
+	const double y = vgu::det(vgu::Matrix3x3({
+		A1, -D1, C1,
+		A2, -D2, C2,
+		A, -D, C
+		})) / det;
+	const double z = vgu::det(vgu::Matrix3x3({
+		A1, B1, -D1,
+		A2, B2, -D2,
+		A, B, -D
+		})) / det;
+	
+	if (
+		isPointBetween(sectionPoint1.coord.x, sectionPoint2.coord.x, x) &&
+		isPointBetween(sectionPoint1.coord.y, sectionPoint2.coord.y, y) &&
+		isPointBetween(sectionPoint1.coord.z, sectionPoint2.coord.z, z)
+		) {
+		return new vgu::Vector4f({ x ,y, z, 1 });
+	}
+
+	return nullptr;
+}
+
+vgu::Vector4f* calculateCrossWithFourLines(const vgu::Vector4f& first, const vgu::Vector4f& second, Side side) {
 	switch (side) {
 	case Side::TOP:
-		return calculateLineSectionCrossing(
-		planeFirst,
-		planeSecond,
-		{ -1, 1 },
-		{ 1, 1 }
-				 );
+		return calculateLinePlaneCrossing(first, second, 0, 1, 0, -1);
 	case Side::BOTTOM:
-		return calculateLineSectionCrossing(
-			planeFirst,
-			planeSecond,
-			{ -1, -1 },
-			{ 1, -1 }
-		);
+		return calculateLinePlaneCrossing(first, second, 0, -1, 0, -1);
 	case Side::LEFT:
-		return calculateLineSectionCrossing(
-			planeFirst,
-			planeSecond,
-			{ -1, -1 },
-			{ -1, 1 }
-		);
+		return calculateLinePlaneCrossing(first, second, -1, 0, 0, -1);
 	case Side::RIGHT:
-		return calculateLineSectionCrossing(
-			planeFirst,
-			planeSecond,
-			{ 1, -1 },
-			{ 1, 1 }
-		);
+		return calculateLinePlaneCrossing(first, second, 1, 0, 0, -1);
 	}
 	return nullptr;
 }
@@ -410,13 +404,29 @@ boolean isPointOutOfLine(const vgu::Vector4f& point, size_t i) {
 	}
 }
 
+vgu::Vector2f calculateTexturePoint(const vgu::Vector4f& first, const vgu::Vector4f& second, const vgu::Vector2f& tFirst, const vgu::Vector2f& tSecond, const vgu::Vector4f& point) {
+	const double bx = tFirst.coord.x;
+	const double by = tFirst.coord.y;
+	const double firstDivider = second.coord.x - first.coord.x;
+	const double secondDivider = second.coord.y - first.coord.y;
+	const double kx = (tSecond.coord.x - tFirst.coord.x) / firstDivider;
+	const double ky = (tSecond.coord.y - tFirst.coord.y) / secondDivider;
+
+	const double x = firstDivider == 0 ? tFirst.coord.x : (kx * (point.coord.x - first.coord.x) + bx);
+	const double y = secondDivider == 0 ? tFirst.coord.y : (ky * (point.coord.y - first.coord.y) + by);
+
+	return { x, y };
+}
+
 Polygon3P* clipPolyg(Polygon3P& polygon, int& size, Side side) {
 	if (static_cast<int>(side) > 3) return &polygon;
 
 	size = 0;
 	Polygon3P* result;
 
-	std::vector<std::reference_wrapper<Polygon3P>> polygonsQueue;
+	std::list<Polygon3P> newQueue;
+	std::list<Polygon3P> polygonsQueue;
+	newQueue.push_back(polygon);
 	polygonsQueue.push_back(polygon);
 
 	for (size_t i = 0; i < 4; ++i) {
@@ -439,331 +449,134 @@ Polygon3P* clipPolyg(Polygon3P& polygon, int& size, Side side) {
 			lineSecond = { 1, -1 };
 			break;
 		}
-		std::cout << "i: " << i << std::endl;
 
-		int j = 0;
+		std::list<Polygon3P>::iterator polygonIter;
 
-		for (auto polyg : polygonsQueue) {
-			std::cout << "\n\n";
-			std::cout << "Iteratin number: " << j << std::endl;
+		for (polygonIter = polygonsQueue.begin(); polygonIter != polygonsQueue.end(); ++polygonIter) {
+			auto polyg = *polygonIter;
 			// Find all points in/out of the screen
 		    ////////////////////////////////////////////////////////////////////////////////
 			vgu::Vector4f* pointsOut[3] = { nullptr, nullptr, nullptr };
+			vgu::Vector2f* tPointsOut[3] = { nullptr, nullptr, nullptr };
 			short pointsOutNum = 0;
 			vgu::Vector4f* pointsIn[3] = { nullptr, nullptr, nullptr };
+			vgu::Vector2f* tPointsIn[3] = { nullptr, nullptr, nullptr };
 			short pointsInNum = 0;
 			////////////////////////////////////////////////////////////////////////////////
-			if (isPointOutOfLine(polygon.m_first, i)) pointsOut[pointsOutNum++] = &polygon.m_first;
-			else pointsIn[pointsInNum++] = &polygon.m_first;
+			if (isPointOutOfLine(polyg.m_first, i)) {
+				tPointsOut[pointsOutNum] = &polyg.m_tFirst;
+				pointsOut[pointsOutNum++] = &polyg.m_first;
+			}
+			else {
+				tPointsIn[pointsInNum] = &polyg.m_tFirst;
+				pointsIn[pointsInNum++] = &polyg.m_first;
+			}
 			////////////////////////////////////////////////////////////////////////////////
-			if (isPointOutOfLine(polygon.m_second, i)) pointsOut[pointsOutNum++] = &polygon.m_second;
-			else pointsIn[pointsInNum++] = &polygon.m_second;
+			if (isPointOutOfLine(polyg.m_second, i)) {
+				tPointsOut[pointsOutNum] = &polyg.m_tSecond;
+				pointsOut[pointsOutNum++] = &polyg.m_second;
+			}
+			else {
+				tPointsIn[pointsInNum] = &polyg.m_tSecond;
+				pointsIn[pointsInNum++] = &polyg.m_second;
+			}
 			////////////////////////////////////////////////////////////////////////////////
-			if (isPointOutOfLine(polygon.m_third, i)) pointsOut[pointsOutNum++] = &polygon.m_third;
-			else pointsIn[pointsInNum++] = &polygon.m_third;
+			if (isPointOutOfLine(polyg.m_third, i)) {
+				tPointsOut[pointsOutNum] = &polyg.m_tThird;
+				pointsOut[pointsOutNum++] = &polyg.m_third;
+			}
+			else {
+				tPointsIn[pointsInNum] = &polyg.m_tThird;
+				pointsIn[pointsInNum++] = &polyg.m_third;
+			}
 			////////////////////////////////////////////////////////////////////////////////
-
-			std::cout << "i: " << i << std::endl;
-			std::cout << "pointsOutNum: " << pointsOutNum << std::endl;
-			std::cout << "polygonsQueue.empty(): " << polygonsQueue.empty() << std::endl;
 
 			if (pointsOutNum == 1) {
-				std::cout << "One point out" << i << std::endl;
-				vgu::Vector2f* result1 = calculateCrossWithFourLines<4>(*pointsIn[0], *pointsOut[0], static_cast<Side>(i));
-				vgu::Vector4f* result1Form = nullptr;
-				std::cout << "Result 1 address: " << result1 << std::endl;
-				if (result1) {
-					result1Form = new vgu::Vector4f{ result1->coord.x, result1->coord.y, pointsIn[0]->coord.z, pointsIn[0]->coord.w };
-					result1->display();
+				vgu::Vector4f* result1 = calculateCrossWithFourLines(*pointsIn[0], *pointsOut[0], static_cast<Side>(i));
+				vgu::Vector4f* result2 = calculateCrossWithFourLines(*pointsIn[1], *pointsOut[0], static_cast<Side>(i));
+
+				if (result1 && result2) {
+					vgu::Vector4f result1Form{ result1->coord.x, result1->coord.y, result1->coord.z, result1->coord.w };
+					vgu::Vector4f result2Form{ result2->coord.x, result2->coord.y, result2->coord.z, result2->coord.w };
+
 					delete result1;
-				}
-
-				std::cout << "\n";
-				vgu::Vector2f* result2 = calculateCrossWithFourLines<4>(*pointsIn[1], *pointsOut[0], static_cast<Side>(i));
-				vgu::Vector4f* result2Form = nullptr;
-				std::cout << "Result 2 address: " << result2 << std::endl;
-				if (result2) {
-					result2Form = new vgu::Vector4f{ result2->coord.x, result2->coord.y, pointsIn[1]->coord.z, pointsIn[1]->coord.w };
-					result2Form->display();
-					std::cout << "Rar" << "\n\n";
-					result2->display();
 					delete result2;
+
+					vgu::Vector2f tRes1 = calculateTexturePoint(*pointsIn[0], *pointsOut[0], *tPointsIn[0], *tPointsOut[0], result1Form);
+					vgu::Vector2f tRes2 = calculateTexturePoint(*pointsIn[1], *pointsOut[0], *tPointsIn[1], *tPointsOut[0], result2Form);
+
+					Polygon3P newPolyg1{
+						result1Form,
+						*pointsIn[1],
+						*pointsIn[0],
+						tRes1,
+						*tPointsIn[1],
+						*tPointsIn[0],
+						polyg.m_normal,
+						polyg.texture
+					};
+
+					Polygon3P newPolyg2{
+						result1Form,
+						result2Form,
+						*pointsIn[1],
+						tRes1,
+						tRes2,
+						*tPointsIn[1],
+						polyg.m_normal,
+						polyg.texture
+					};
+
+					newQueue.pop_front();
+					newQueue.push_back(newPolyg1);
+					newQueue.push_back(newPolyg2);
 				}
-				std::cout << "\n\n";
+			}
 
-				if (!(result1Form && result2Form)) continue;
+			if (pointsOutNum == 2) {
+				vgu::Vector4f* result1 = calculateCrossWithFourLines(*pointsIn[0], *pointsOut[0], static_cast<Side>(i));
+				vgu::Vector4f* result2 = calculateCrossWithFourLines(*pointsIn[0], *pointsOut[1], static_cast<Side>(i));
 
-				Polygon3P* newPolyg1 = new Polygon3P{
-					*result1Form,
-					*pointsIn[1],
-					*pointsIn[0],
-					polyg.get().m_tFirst,
-					polyg.get().m_tSecond,
-					polyg.get().m_tThird,
-					polyg.get().m_normal
-				};
+				if (result1 && result2) {
+					vgu::Vector4f result1Form{ result1->coord.x, result1->coord.y, result1->coord.z, result1->coord.w };
+					vgu::Vector4f result2Form{ result2->coord.x, result2->coord.y, result2->coord.z, result2->coord.w };
 
-				Polygon3P* newPolyg2 = new Polygon3P{
-					*result1Form,
-					*result2Form,
-					*pointsIn[1],
-					polyg.get().m_tFirst,
-					polyg.get().m_tSecond,
-					polyg.get().m_tThird,
-					polyg.get().m_normal
-				};
+					vgu::Vector2f tRes1 = calculateTexturePoint(*pointsIn[0], *pointsOut[0], *tPointsIn[0], *tPointsOut[0], result1Form);
+					vgu::Vector2f tRes2 = calculateTexturePoint(*pointsIn[0], *pointsOut[1], *tPointsIn[0], *tPointsOut[1], result2Form);
 
-				polygonsQueue.pop_back();
-				polygonsQueue.push_back(*newPolyg1);
-				polygonsQueue.push_back(*newPolyg2);
+					delete result1;
+					delete result2;
+
+					Polygon3P newPolyg{
+						result1Form,
+						result2Form,
+						*pointsIn[0],
+						tRes1,
+						tRes2,
+						*tPointsIn[0],
+						polyg.m_normal,
+						polyg.texture
+					};
+
+					newQueue.pop_front();
+					newQueue.push_back(newPolyg);
+				}
+			}
+
+			if (pointsOutNum == 3) {
+				newQueue.pop_front();
 			}
 		}
 
+		polygonsQueue.assign(std::next(newQueue.begin(), 0), std::next(newQueue.end(), 0));
 	}
 
 	size = polygonsQueue.size();
 	result = new Polygon3P[size];
 	size_t i = 0;
-	for (auto pol : polygonsQueue) {
-		result[i] = pol.get();
+	for (auto& pol : polygonsQueue) {
+		result[i] = pol;
 		++i;
 	}
-	return result;
-
-	// Find all points in/out of the screen
-	////////////////////////////////////////////////////////////////////////////////
-	vgu::Vector4f* pointsOut[3] = { nullptr, nullptr, nullptr };
-	short pointsOutNum = 0;
-	vgu::Vector4f* pointsIn[3] = { nullptr, nullptr, nullptr };
-	short pointsInNum = 0;
-	////////////////////////////////////////////////////////////////////////////////
-	if (isPointOutOfScreen(polygon.m_first)) pointsOut[pointsOutNum++] = &polygon.m_first;
-	else pointsIn[pointsInNum++] = &polygon.m_first;
-	////////////////////////////////////////////////////////////////////////////////
-	if (isPointOutOfScreen(polygon.m_second)) pointsOut[pointsOutNum++] = &polygon.m_second;
-	else pointsIn[pointsInNum++] = &polygon.m_second;
-	////////////////////////////////////////////////////////////////////////////////
-	if (isPointOutOfScreen(polygon.m_third)) pointsOut[pointsOutNum++] = &polygon.m_third;
-	else pointsIn[pointsInNum++] = &polygon.m_third;
-	////////////////////////////////////////////////////////////////////////////////
-
-	//std::cout << "pointsOutNum: " << pointsOutNum << std::endl;
-	if (pointsOutNum == 1) {
-		/*std::cout << "One point out" << std::endl;
-		vgu::Vector2f* result1 = calculateCrossWithFourLines<4>(*pointsIn[0], *pointsOut[0], Side::BOTTOM);
-		std::cout << "Result 1 address: " << result1 << std::endl;
-		if (result1) {
-			result1->display();
-			delete result1;
-		}
-
-
-		std::cout << "\n";
-		vgu::Vector2f* result2 = calculateCrossWithFourLines<4>(*pointsIn[1], *pointsOut[0], Side::BOTTOM);
-		std::cout << "Result 2 address: " << result2 << std::endl;
-		if (result2) {
-			result2->display();
-			delete result2;
-		}
-		std::cout << "\n\n";*/
-
-		/*Polygon3P newPolyg1 = { result1, pointsIn[1], pointsIn[0] };
-		Polygon3P newPolyg2 = { pointsIn[1], result1, result2 };
-		result = new Polygon3P[2];
-		result[0] = newPolyg1;
-		result[1] = newPolyg2;
-		size = 2;
-		return result;*/
-	}
-
-	// If all polygon located in screen just return itself
-	size = 1;
-	result = new Polygon3P[1];
-	result[0] = polygon;
-	return result;
-}
-
-Polygon3P* clipPolygon(Polygon3P& polygon, int& size) {
-	size = 0;
-	Polygon3P* result;
-	////////////////////////////////////////////////////////////////////////////////
-	vgu::Vector4f* pointsOut[3] = { nullptr, nullptr, nullptr };
-	short pointsOutNum = 0;
-	vgu::Vector4f* pointsIn[3] = { nullptr, nullptr, nullptr };
-	short pointsInNum = 0;
-	////////////////////////////////////////////////////////////////////////////////
-	if (isPointOutOfScreen(polygon.m_first)) pointsOut[pointsOutNum++] = &polygon.m_first;
-	else pointsIn[pointsInNum++] = &polygon.m_first;
-	////////////////////////////////////////////////////////////////////////////////
-	if (isPointOutOfScreen(polygon.m_second)) pointsOut[pointsOutNum++] = &polygon.m_second;
-	else pointsIn[pointsInNum++] = &polygon.m_second;
-	////////////////////////////////////////////////////////////////////////////////
-	if (isPointOutOfScreen(polygon.m_third)) pointsOut[pointsOutNum++] = &polygon.m_third;
-	else pointsIn[pointsInNum++] = &polygon.m_third;
-	////////////////////////////////////////////////////////////////////////////////
-	// std::cout << "pointsOutNum: " << pointsOutNum << std::endl;
-	if (pointsOutNum == 1) {
-		//result = new Polygon3P[2];
-		// y == 1
-		double xCoords[2] = { 0, 0 };
-		bool isYSecond = false;
-		double yCoords[2] = { 0, 0 };
-		bool isXSecond = false;
-		for (size_t i = 0; i < 2; ++i) {
-			xCoords[i] = (pointsOut[0]->coord.x - pointsIn[i]->coord.x)
-				* ((1 - pointsIn[i]->coord.y)
-					/(pointsOut[0]->coord.y - pointsIn[i]->coord.y))
-				+ pointsIn[i]->coord.x;
-			if ((pointsOut[0]->coord.x > pointsIn[i]->coord.x && (xCoords[i] > pointsOut[0]->coord.x || xCoords[i] < pointsIn[i]->coord.x))
-				|| (pointsOut[0]->coord.x < pointsIn[i]->coord.x && (xCoords[i] < pointsOut[0]->coord.x || xCoords[i] > pointsIn[i]->coord.x))) {
-				break;
-			}
-		}
-		/*std::cout << "Point out: " << pointsOut[0]->coord.x << "; " << pointsOut[0]->coord.y << std::endl;
-		std::cout << "Point in: " << pointsIn[0]->coord.x << "; " << pointsIn[0]->coord.y << std::endl;
-		std::cout << "xCoords 1 : " << xCoords[0] << "; " << xCoords[1] << std::endl;*/
-		// y = -1
-		if (xCoords[1] == 0) {
-			isYSecond = true;
-			for (size_t i = 0; i < 2; ++i) {
-				xCoords[i] = (pointsOut[0]->coord.x - pointsIn[i]->coord.x)
-					* ((-1 - pointsIn[i]->coord.y)
-						/ (pointsOut[0]->coord.y - pointsIn[i]->coord.y))
-					+ pointsIn[i]->coord.x;
-				if ((pointsOut[0]->coord.x > pointsIn[i]->coord.x && (xCoords[i] > pointsOut[0]->coord.x || xCoords[i] < pointsIn[i]->coord.x))
-					|| (pointsOut[0]->coord.x < pointsIn[i]->coord.x && (xCoords[i] < pointsOut[0]->coord.x || xCoords[i] > pointsIn[i]->coord.x))) {
-					break;
-				}
-			}
-		}
-		// std::cout << "xCoords 2: " << xCoords[0] << "; " << xCoords[1] << std::endl;
-		// x == 1
-		if (xCoords[1] == 0) {
-			for (size_t i = 0; i < 2; ++i) {
-				yCoords[i] = (pointsOut[0]->coord.y - pointsIn[i]->coord.y)
-					* ((1 - pointsIn[i]->coord.x)
-						/ (pointsOut[0]->coord.x - pointsIn[i]->coord.x))
-					+ pointsIn[i]->coord.y;
-				if ((pointsOut[0]->coord.y > pointsIn[i]->coord.y && (yCoords[i] > pointsOut[0]->coord.y || yCoords[i] < pointsIn[i]->coord.y))
-					|| (pointsOut[0]->coord.y < pointsIn[i]->coord.y && (yCoords[i] < pointsOut[0]->coord.y || yCoords[i] > pointsIn[i]->coord.y))) {
-					break;
-				}
-			}
-		}
-		//std::cout << "yCoords 1: " << yCoords[0] << "; " << yCoords[1] << std::endl;
-		// x == -1
-		if (xCoords[1] == 0 && yCoords[1] == 0) {
-			isXSecond = true;
-			for (size_t i = 0; i < 2; ++i) {
-				yCoords[i] = (pointsOut[0]->coord.y - pointsIn[i]->coord.y)
-					* ((-1 - pointsIn[i]->coord.x)
-						/ (pointsOut[0]->coord.x - pointsIn[i]->coord.x))
-					+ pointsIn[i]->coord.y;
-			}
-		}
-		//std::cout << "yCoords 1: " << yCoords[0] << "; " << yCoords[1] << std::endl;
-		////////////////////////////////////////////////////////////////////////////
-
-		vgu::Matrix2x2 deltaMatrix = {
-			pointsIn[0]->coord.x, pointsIn[0]->coord.y,
-			pointsOut[0]->coord.x, pointsOut[0]->coord.y
-		};
-		vgu::Matrix2x2 matrixA = {
-			pointsIn[0]->coord.z, pointsIn[0]->coord.y,
-			pointsIn[0]->coord.z, pointsOut[0]->coord.y,
-		};
-		vgu::Matrix2x2 matrixB = {
-			pointsIn[0]->coord.x, pointsIn[0]->coord.z,
-			pointsOut[0]->coord.x, pointsOut[0]->coord.z
-		};
-		double delta = vgu::det(deltaMatrix);
-		double A = vgu::det(matrixA) / delta;
-		double B = vgu::det(matrixB) / delta;
-
-		////////////////////////////////////////////////////////////////////////////
-		vgu::Vector4f firstPoint, secondPoint;
-		if (xCoords[1] != 0) {
-			double Y = isYSecond ? -1 : 1;
-			firstPoint = { xCoords[0], Y, A * xCoords[0] + B * Y, pointsIn[0]->coord.w };
-			secondPoint = { xCoords[1], Y, A * xCoords[1] + B * Y, pointsIn[1]->coord.w };
-			/*firstPoint.coord.x = xCoords[0];
-			firstPoint.coord.y = Y;
-			firstPoint.coord.z = pointsIn[0]->coord.z;
-			firstPoint.coord.w = pointsIn[0]->coord.w;
-			secondPoint.coord.x = xCoords[1];
-			secondPoint.coord.y = Y;
-			secondPoint.coord.z = pointsIn[1]->coord.z;
-			secondPoint.coord.w = pointsIn[1]->coord.w;*/
-		}
-		else {
-			double X = isXSecond ? -1 : 1;
-			firstPoint = { X, yCoords[0], A * X + B * yCoords[0], pointsIn[0]->coord.w };
-			secondPoint = { X, yCoords[1], A * X + B * yCoords[1], pointsIn[1]->coord.w };
-			/*firstPoint.coord.x = X;
-			firstPoint.coord.y = yCoords[0];
-			firstPoint.coord.z = pointsIn[0]->coord.z;
-			firstPoint.coord.w = pointsIn[0]->coord.w;
-			secondPoint.coord.x = xCoords[1];
-			secondPoint.coord.y = yCoords[1];
-			secondPoint.coord.z = pointsIn[1]->coord.z;
-			secondPoint.coord.w = pointsIn[1]->coord.w;*/
-		}
-		size = 1;
-	result = new Polygon3P[1];
-		result[0] = polygon;
-		return result;
-		Polygon3P** polygons = new Polygon3P*[2];
-		int sizes[2] = { 0, 0 };
-		for (size_t i = 0; i < 2; ++i) {
-			// TODO: Add to Polygon3P class method clone
-			Polygon3P newPolygon;
-			newPolygon.m_first = i == 0 ? *pointsIn[i] : *pointsIn[i];
-			newPolygon.m_second = i == 0 ? *pointsIn[i + 1] : firstPoint;
-			newPolygon.m_third = secondPoint;
-			newPolygon.m_tFirst = polygon.m_tFirst;
-			newPolygon.m_tSecond = polygon.m_tSecond;
-			newPolygon.m_tThird = polygon.m_tThird;
-			newPolygon.texture = polygon.texture;
-			newPolygon.m_normal = vgu::crossProduct(
-				vgu::vecToEuclid(
-					newPolygon.m_second - newPolygon.m_first),
-				vgu::vecToEuclid(newPolygon.m_third - newPolygon.m_first)
-			);
-			int newSize = 0;
-			polygons[i] = clipPolygon(newPolygon, newSize);
-			sizes[i] = newSize;
-			size += newSize;
-		}
-		result = new Polygon3P[size];
-		for (size_t i = 0; i < 2; ++i) {
-			/*std::cout << "Size " << i << ": " << sizes[i] << std::endl;
-			std::cout << std::endl;*/
-			for (size_t j = 0; j < sizes[i]; ++j) {
-				/*std::cout << "Polygon " << i << ", " << j << ": " << std::endl;
-				polygons[i][j].display();*/
-				result[j + i * sizes[i]] = polygons[i][j];
-			}
-		}
-		for (int i = 0; i < 2; ++i) delete[] polygons[i];
-		delete[] polygons;
-		/*std::cout << std::endl;
-		for (size_t i = 0; i < 2; ++i) {
-			std::cout << "Polygon " << i << ":" << std::endl;
-			result[i].display();
-		}
-		std::cout << std::endl;*/
-		return result;
-	}
-	if (pointsOutNum == 2) {
-
-	}
-	if (pointsOutNum == 3) {
-
-	}
-	size = 1;
-	result = new Polygon3P[1];
-	/*std::cout << "Display before the polygon";
-	polygon.display();*/
-	result[0] = polygon;
 	return result;
 }
