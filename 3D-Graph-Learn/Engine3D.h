@@ -126,7 +126,7 @@ public:
 			0, 0, 0, 1
 		};
 		// Scaling and translation of the vertices
-		const double scalingCoeff = 0.025;
+		const double scalingCoeff = 0.05;
 		const vgu::Matrix4x4 scalingMat = {
 			scalingCoeff, 0, 0, 0,
 			0, scalingCoeff, 0, 0,
@@ -196,6 +196,7 @@ public:
 					FillTriangle(pol[j]);
 					//DrawTriangle(pol[j]);
 				}
+				delete [] pol;
 			}
 
 			delete [] polygon;

@@ -113,13 +113,13 @@ void Engine3D::FillHalfTriangle(const Pixel& a, const Pixel& b, const double coe
 		double segmentB = a.x - segmentA * a.y;
 
 		for (int y = a.y; y <= b.y; ++y) {
-			int xMin = static_cast<int>(segmentA * y + segmentB + 0.5f);
-			int xMax = static_cast<int>(longestA * y + longestB + 0.5f);
+			int xMin = static_cast<int>(segmentA * y + segmentB + 0.5);
+			int xMax = static_cast<int>(longestA * y + longestB + 0.5);
 			if (xMin > xMax) std::swap(xMin, xMax);
 			for (int x = xMin; x <= xMax; ++x) {
 				const double zBuffData = zBuffA * x + zBuffB * y + zBuffC;
 				// TODO: Fix problem with types in here
-				const unsigned long long zBuffPixelIndex = (long long)x + (static_cast<long long>(m_pixelsWNum) - 1) * (long long)y;
+				const unsigned long long zBuffPixelIndex = (long long)x + (static_cast<long long>(m_pixelsWNum + 0.5) - 1) * (long long)y;
 				if (zBuffPixelIndex < numOfPixels && m_zBuffer[zBuffPixelIndex] > zBuffData) {
 					unsigned char colorRed = (unsigned char)(lightIntensivity * 230);
 					unsigned char colorGreen = (unsigned char)(lightIntensivity * 230);
@@ -128,9 +128,9 @@ void Engine3D::FillHalfTriangle(const Pixel& a, const Pixel& b, const double coe
 					if (texture) {
 						long long textureX = coeffsT[0] * x + coeffsT[1] * y + coeffsT[2];
 						long long textureY = coeffsT[3] * x + coeffsT[4] * y + coeffsT[5];
-						if (textureX >= texture->GetWidth()) textureX = static_cast<long long>(texture->GetWidth()) - 1;
+						if (textureX >= texture->GetWidth()) textureX = static_cast<long long>(texture->GetWidth() + 0.5) - 1;
 						if (textureX < 0) textureX = 0;
-						if (textureY >= texture->GetHeight()) textureY = static_cast<long long>(texture->GetHeight()) - 1;
+						if (textureY >= texture->GetHeight()) textureY = static_cast<long long>(texture->GetHeight() + 0,5) - 1;
 						if (textureY < 0) textureY = 0;
 						textureY = texture->GetHeight() - textureY - 1;
 						const long long textureIndex = 4 * (textureX + textureY * texture->GetWidth());
@@ -163,9 +163,9 @@ void Engine3D::FillTriangle(const Polygon3P& polygon) {
 	C[0] =(C[0] * first + first) * 0.5;
 	C[1] = (C[1] * second + second) * 0.5;
 
-	Pixel a = { static_cast<int>(A[0]), static_cast<int>(A[1]) };
-	Pixel b = { static_cast<int>(B[0]), static_cast<int>(B[1]) };
-	Pixel c = { static_cast<int>(C[0]), static_cast<int>(C[1]) };
+	Pixel a = { static_cast<int>(A[0] + 0.5), static_cast<int>(A[1] + 0.5) };
+	Pixel b = { static_cast<int>(B[0] + 0.5), static_cast<int>(B[1] + 0.5) };
+	Pixel c = { static_cast<int>(C[0] + 0.5), static_cast<int>(C[1] + 0.5) };
 
 	vgu::Vector2f At = polygon.m_tFirst, Bt = polygon.m_tSecond, Ct = polygon.m_tThird;
 
@@ -269,12 +269,12 @@ void Engine3D::DrawLine(Pixel a, Pixel b, const double coeffs[3]) {
 
 void Engine3D::DrawTriangle(const Polygon3P& polygon) {
 	vgu::Vector4f A = polygon.m_first, B = polygon.m_second, C = polygon.m_third;
-	A[0] = static_cast<int>(A[0] * m_pixelsWNum + m_pixelsWNum) * 0.5;
-	A[1] = static_cast<int>(A[1] * m_pixelsHNum + m_pixelsHNum) * 0.5;
-	B[0] = static_cast<int>(B[0] * m_pixelsWNum + m_pixelsWNum) * 0.5;
-	B[1] = static_cast<int>(B[1] * m_pixelsHNum + m_pixelsHNum) * 0.5;
-	C[0] = static_cast<int>(C[0] * m_pixelsWNum + m_pixelsWNum) * 0.5;
-	C[1] = static_cast<int>(C[1] * m_pixelsHNum + m_pixelsHNum) * 0.5;
+	A[0] = static_cast<int>(A[0] * m_pixelsWNum + m_pixelsWNum + 0.5) * 0.5;
+	A[1] = static_cast<int>(A[1] * m_pixelsHNum + m_pixelsHNum + 0.5) * 0.5;
+	B[0] = static_cast<int>(B[0] * m_pixelsWNum + m_pixelsWNum + 0.5) * 0.5;
+	B[1] = static_cast<int>(B[1] * m_pixelsHNum + m_pixelsHNum + 0.5) * 0.5;
+	C[0] = static_cast<int>(C[0] * m_pixelsWNum + m_pixelsWNum + 0.5) * 0.5;
+	C[1] = static_cast<int>(C[1] * m_pixelsHNum + m_pixelsHNum + 0.5) * 0.5;
 	
 	Pixel a = { A[0], A[1] };
 	Pixel b = { B[0], B[1] };
