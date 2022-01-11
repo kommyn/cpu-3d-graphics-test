@@ -30,8 +30,9 @@ enum class Side {
 
 bool isPointOutOfScreen(const vgu::Vector4f& point);
 
-Polygon3P* clipPolygon(Polygon3P& polygon, int& size);
-Polygon3P* clipPolyg(Polygon3P& polygon, int& size, Side side = Side::BOTTOM);
+Polygon3P* clipPolyg(Polygon3P& polygon, int& size);
+
+Polygon3P* clipPolygNew(Polygon3P& polygon, int& size);
 
 // TODO: Add method for drawing textured triangle
 // TODO: I should clean code and begin writing clipping algorythm
@@ -104,7 +105,7 @@ public:
 		const size_t POLYGONS_NUM = model->GetPolygonsSize();
 		Polygon3P* polygons = model->GetPolygons();
 
-		/*const size_t POLYGONS_NUM = 1;
+		/*const size_t POLYGONS_NUM = 3;
 		Polygon3P* polygons = new Polygon3P[12];
 		vgu::Vector4f p1 = { -1, 1, 0, 1 };
 		vgu::Vector4f p2 = { 1, -1, 0, 1 };
@@ -114,19 +115,9 @@ public:
 		vgu::Vector4f p6 = { 1, -1, -1, 1 };
 		vgu::Vector4f p7 = { -1, -1, -1, 1 };
 		vgu::Vector4f p8 = { 1, 1, -1, 1 };
-		polygons[0] = { p1, p2, p3, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0, -1 } };*/
-		//polygons[1] = { p1, p4, p2, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0, -1 } };
-		//polygons[2] = { p5, p7, p6, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0, 1 } };
-		//polygons[3] = { p5, p6, p8, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0, 1 } };
-
-		/*size_t siz3e = 0;
-		for (size_t i = 0; i < POLYGONS_NUM; ++i) {
-			if (polygons[i].m_ignorePolygon) {
-				siz3e += 1;
-			}
-		}
-		std::cout << "Size: " << siz3e << std::endl;*/
-		//std::list<Polygon3P> polygonsList = model->GetPolygonsList();
+		polygons[2] = { p1, p4, p5, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, -1, 0 } };
+		polygons[0] = { p1, p2, p4, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0, -1 } };
+		polygons[1] = { p1, p2, p3, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0, -1 } };*/
 		
 		vgu::Matrix4x4 modelMatrix = {
 			1, 0, 0, 0,
@@ -150,24 +141,6 @@ public:
 		};
 		modelMatrix = scalingMat * modelMatrix;
 
-		// TODO: Undertand math under this part of the pipeline
-		// normals calculation
-		/*std::list<Polygon3P>::iterator iter = polygonsList.begin();
-		while (iter != polygonsList.end()) {
-			(*iter) = modelMatrix * (*iter);
-			(*iter).m_normal = vgu::normalize(vgu::vecToEuclid(modelMatrix * vgu::vecToHomogen((*iter).m_normal)));
-			const vgu::Vector3f vec = vgu::vecToEuclid((*iter).m_first) - m_camera.GetPos();
-			const double dotProduct = vgu::dotProduct((*iter).m_normal, vec);
-			if (dotProduct < 0) polygonsList.erase(iter++); else ++iter;
-		}*/
-		/*for (size_t i = 0; i < POLYGONS_NUM; ++i) {
-			polygons[i] = modelMatrix * polygons[i];
-			polygons[i].m_normal = vgu::normalize(vgu::vecToEuclid(modelMatrix * vgu::vecToHomogen(polygons[i].m_normal)));
-			const vgu::Vector3f vec = vgu::vecToEuclid(polygons[i].m_first) - m_camera.GetPos();
-			const double dotProduct = vgu::dotProduct(polygons[i].m_normal, vec);
-			if (dotProduct < 0) polygons[i].ignorePolygon = true;
-		}*/
-
 		vgu::Matrix4x4 resultMatrix = {
 			1, 0, 0, 0,
 			0, 1, 0, 0,
@@ -178,23 +151,20 @@ public:
 		// cameraPos calculation
 		// TODO: Derive lookAt matrix for different coordinate systems (left and right) in order to undestand mathematical background
 		vgu::Matrix4x4 lookAtMatrix = m_camera.GetLookAtMatrix();
-		//std::cout << "Look at matrix: ";
-		//lookAtMatrix.display();
-		//std::cout << "\n\n";
 		resultMatrix = lookAtMatrix * resultMatrix;
 
 		// Perspective projection calculation
-		const double aspectRatio = static_cast<double>(m_pixelsHNum - 1) / static_cast<double>(m_pixelsWNum - 1);
+		const double aspectRatio = (static_cast<double>(m_pixelsHNum) - 1) / (static_cast<double>(m_pixelsWNum) - 1);
 		const double FoV = static_cast<double>(M_PI / 4);
 		const double FoVValue = 1 / std::tan(FoV / 2);
-		const double zNear = 0.01f;
-		const double zFar = 100.0f;
+		const double zNear = 0.1;
+		const double zFar = 100.0;
 		const double zDiff = zFar - zNear;
 		// TODO: Derive this matrix for different coordinate systems (left and right) in order to undestand mathematical background
 		const vgu::Matrix4x4 perspectiveProjMatrix = {
 			aspectRatio * FoVValue, 0, 0, 0,
 			0, FoVValue, 0, 0,
-			0, 0, (zFar + zNear) / zDiff, - (2 * zNear * zFar) / zDiff,
+			0, 0, (zFar + zNear) / zDiff, -(2 * zNear * zFar) / zDiff,
 			0, 0, 1, 0
 		};
 		resultMatrix = perspectiveProjMatrix * resultMatrix;
@@ -210,29 +180,25 @@ public:
 			if (dotProduct < 0) continue;
 
 			// Multiplying resultMatrix of view and projection space on the polygons
-			polygons[i] = resultMatrix * polygons[i];
-			polygons[i].PerspectiveDivision();
+			polygons[i] = lookAtMatrix * polygons[i];
 
-			// TODO: Add here basis of cropping algorythm
-			if (polygons[i].m_clipPolygon) {
-				// TODO: Fix this function, this array shoud clean itself
-				int size = 0;
-				Polygon3P* polygon = clipPolyg(polygons[i], size);
-				//std::cout << "Result size: " << size << "\n";
-				for (size_t k = 0; k < size; ++k) {
-					/*std::cout << "Out iteration: " << k << std::endl;
-					polygon[k].display();*/
+			int size = 0;
+			Polygon3P* polygon = clipPolygNew(polygons[i], size);
+			for (size_t k = 0; k < size; ++k) {
+				polygon[k] = perspectiveProjMatrix * polygon[k];
+				polygon[k].PerspectiveDivision();
 
-					FillTriangle(polygon[k]);
-					//DrawTriangle(polygon[k]);
+				if (polygon[k].m_ignorePolygon) continue;
+
+				int newSize;
+				Polygon3P* pol = clipPolyg(polygon[k], newSize);
+				for (size_t j = 0; j < newSize; ++j) {
+					FillTriangle(pol[j]);
+					//DrawTriangle(pol[j]);
 				}
-				delete[] polygon;
 			}
-			else {
-				if (polygons[i].m_ignorePolygon) continue;
-				FillTriangle(polygons[i]);
-				//DrawTriangle(polygons[i]);
-			}
+
+			delete [] polygon;
 		}
 
 		// TODO: Remove this, it is temporary solution just to see is everything working well

@@ -185,10 +185,13 @@ void Engine3D::FillTriangle(const Polygon3P& polygon) {
 		std::swap(Bt, Ct);
 	}
 
+	//const double delta = (B[0] * C[1] - B[1] * C[0]) + (C[0] * A[1] - C[1] * A[0]) + (A[0] * B[1] - A[1] * B[0]);
 	const double delta = (B[0] - A[0]) * (C[1] - A[1]) - (C[0] - A[0]) * (B[1] - A[1]);
-	if (std::abs(delta) < 0.000001f) return;
+	if (std::abs(delta) < 0.0000000001f) return;
 	const double zBuffA = ((B[2] - A[2]) * (C[1] - A[1]) - (C[2] - A[2]) * (B[1] - A[1])) / delta;
+	//const double zBuffA = (B[2] * C[1] - B[1] * C[2]) + (C[2] * A[1] - C[1] * A[2]) + (A[2] * B[1] - B[2] * A[1]);
 	const double zBuffB = ((B[0] - A[0]) * (C[2] - A[2]) - (C[0] - A[0]) * (B[2] - A[2])) / delta;
+	//const double zBuffB = (B[0] * C[2] - B[2] * C[0]) + (C[0] * A[2] - C[2] * A[0]) + (A[0] * B[2] - A[2] * B[0]);
 	const double zBuffC = (A[0] * (B[1] * C[2] - C[1] * B[2]) - B[0] * (A[1] * C[2] - C[1] * A[2]) + C[0] * (A[1] * B[2] - B[1] * A[2])) / delta;
 
 	// TODO: Do something with this calculation, it is really bad
@@ -364,7 +367,7 @@ vgu::Vector4f* calculateLinePlaneCrossing(
 		A2, B2, -D2,
 		A, B, -D
 		})) / det;
-	
+
 	if (
 		isPointBetween(sectionPoint1.coord.x, sectionPoint2.coord.x, x) &&
 		isPointBetween(sectionPoint1.coord.y, sectionPoint2.coord.y, y) &&
@@ -376,7 +379,7 @@ vgu::Vector4f* calculateLinePlaneCrossing(
 	return nullptr;
 }
 
-vgu::Vector4f* calculateCrossWithFourLines(const vgu::Vector4f& first, const vgu::Vector4f& second, Side side) {
+vgu::Vector4f* calculateCrossWithFourLines(const vgu::Vector4f& first, const vgu::Vector4f& second, const Side& side) {
 	switch (side) {
 	case Side::TOP:
 		return calculateLinePlaneCrossing(first, second, 0, 1, 0, -1);
@@ -390,16 +393,17 @@ vgu::Vector4f* calculateCrossWithFourLines(const vgu::Vector4f& first, const vgu
 	return nullptr;
 }
 
+
 // TODO: Этот костыль позволяет определить о какой линии идёт речь, по-хорошему надо писать функцию для любой линии
-boolean isPointOutOfLine(const vgu::Vector4f& point, size_t i) {
-	switch (i) {
-	case 0:
+boolean isPointOutOfLine(const vgu::Vector4f& point, const Side& side) {
+	switch (side) {
+	case Side::TOP:
 		return point.coord.y > 1;
-	case 1:
+	case Side::LEFT:
 		return point.coord.x < -1;
-	case 2:
+	case Side::RIGHT:
 		return point.coord.x > 1;
-	case 3:
+	case Side::BOTTOM:
 		return point.coord.y < -1;
 	}
 }
@@ -418,38 +422,14 @@ vgu::Vector2f calculateTexturePoint(const vgu::Vector4f& first, const vgu::Vecto
 	return { x, y };
 }
 
-Polygon3P* clipPolyg(Polygon3P& polygon, int& size, Side side) {
-	if (static_cast<int>(side) > 3) return &polygon;
-
+Polygon3P* clipPolyg(Polygon3P& polygon, int& size) {
 	size = 0;
 	Polygon3P* result;
 
-	std::list<Polygon3P> newQueue;
 	std::list<Polygon3P> polygonsQueue;
-	newQueue.push_back(polygon);
 	polygonsQueue.push_back(polygon);
 
 	for (size_t i = 0; i < 4; ++i) {
-		vgu::Vector2f lineFirst, lineSecond;
-		switch (i) {
-		case 0:
-			lineFirst = { -1, 1 };
-			lineSecond = { 1, 1 };
-			break;
-		case 1:
-			lineFirst = { -1, 1 };
-			lineSecond = { -1, -1 };
-			break;
-		case 2:
-			lineFirst = { 1, 1 };
-			lineSecond = { 1, -1 };
-			break;
-		case 3:
-			lineFirst = { -1, -1 };
-			lineSecond = { 1, -1 };
-			break;
-		}
-
 		std::list<Polygon3P>::iterator polygonIter;
 
 		for (polygonIter = polygonsQueue.begin(); polygonIter != polygonsQueue.end(); ++polygonIter) {
@@ -463,7 +443,7 @@ Polygon3P* clipPolyg(Polygon3P& polygon, int& size, Side side) {
 			vgu::Vector2f* tPointsIn[3] = { nullptr, nullptr, nullptr };
 			short pointsInNum = 0;
 			////////////////////////////////////////////////////////////////////////////////
-			if (isPointOutOfLine(polyg.m_first, i)) {
+			if (isPointOutOfLine(polyg.m_first, static_cast<Side>(i))) {
 				tPointsOut[pointsOutNum] = &polyg.m_tFirst;
 				pointsOut[pointsOutNum++] = &polyg.m_first;
 			}
@@ -472,7 +452,7 @@ Polygon3P* clipPolyg(Polygon3P& polygon, int& size, Side side) {
 				pointsIn[pointsInNum++] = &polyg.m_first;
 			}
 			////////////////////////////////////////////////////////////////////////////////
-			if (isPointOutOfLine(polyg.m_second, i)) {
+			if (isPointOutOfLine(polyg.m_second, static_cast<Side>(i))) {
 				tPointsOut[pointsOutNum] = &polyg.m_tSecond;
 				pointsOut[pointsOutNum++] = &polyg.m_second;
 			}
@@ -481,7 +461,7 @@ Polygon3P* clipPolyg(Polygon3P& polygon, int& size, Side side) {
 				pointsIn[pointsInNum++] = &polyg.m_second;
 			}
 			////////////////////////////////////////////////////////////////////////////////
-			if (isPointOutOfLine(polyg.m_third, i)) {
+			if (isPointOutOfLine(polyg.m_third, static_cast<Side>(i))) {
 				tPointsOut[pointsOutNum] = &polyg.m_tThird;
 				pointsOut[pointsOutNum++] = &polyg.m_third;
 			}
@@ -527,9 +507,9 @@ Polygon3P* clipPolyg(Polygon3P& polygon, int& size, Side side) {
 						polyg.texture
 					};
 
-					newQueue.pop_front();
-					newQueue.push_back(newPolyg1);
-					newQueue.push_back(newPolyg2);
+					polygonsQueue.erase(polygonIter);
+					polygonsQueue.push_back(newPolyg1);
+					polygonsQueue.push_back(newPolyg2);
 				}
 			}
 
@@ -558,17 +538,173 @@ Polygon3P* clipPolyg(Polygon3P& polygon, int& size, Side side) {
 						polyg.texture
 					};
 
-					newQueue.pop_front();
-					newQueue.push_back(newPolyg);
+					polygonsQueue.erase(polygonIter);
+					polygonsQueue.push_back(newPolyg);
 				}
 			}
 
 			if (pointsOutNum == 3) {
-				newQueue.pop_front();
+				polygonsQueue.erase(polygonIter);
+			}
+		}
+	}
+
+	size = polygonsQueue.size();
+	result = new Polygon3P[size];
+	size_t i = 0;
+	for (auto& pol : polygonsQueue) {
+		result[i] = pol;
+		++i;
+	}
+	return result;
+}
+
+bool isPointOutOfLineNew(const vgu::Vector4f& point, const int& side) {
+	switch (side) {
+	case 0:
+		return (point.coord.z < 0.1);
+	case 1:
+		return (point.coord.z > 100);
+	}
+	return false;
+}
+
+vgu::Vector4f* calculateCrossWithTwoLines(const vgu::Vector4f& first, const vgu::Vector4f& second, const int& side) {
+	switch (side) {
+	case 0:
+		return calculateLinePlaneCrossing(first, second, 0, 0, 1, -0.1);
+	case 1:
+		return calculateLinePlaneCrossing(first, second, 0, 0, -1, -100);
+	}
+	return nullptr;
+}
+
+Polygon3P* clipPolygNew(Polygon3P& polygon, int& size) {
+	size = 0;
+	Polygon3P* result;
+
+	std::list<Polygon3P> polygonsQueue;
+	polygonsQueue.push_back(polygon);
+
+	for (size_t i = 0; i < 4; ++i) {
+		std::list<Polygon3P>::iterator polygonIter;
+
+		for (polygonIter = polygonsQueue.begin(); polygonIter != polygonsQueue.end(); ++polygonIter) {
+			auto polyg = *polygonIter;
+			// Find all points in/out of the screen
+			////////////////////////////////////////////////////////////////////////////////
+			vgu::Vector4f* pointsOut[3] = { nullptr, nullptr, nullptr };
+			vgu::Vector2f* tPointsOut[3] = { nullptr, nullptr, nullptr };
+			short pointsOutNum = 0;
+			vgu::Vector4f* pointsIn[3] = { nullptr, nullptr, nullptr };
+			vgu::Vector2f* tPointsIn[3] = { nullptr, nullptr, nullptr };
+			short pointsInNum = 0;
+			////////////////////////////////////////////////////////////////////////////////
+			if (isPointOutOfLineNew(polyg.m_first, i)) {
+				tPointsOut[pointsOutNum] = &polyg.m_tFirst;
+				pointsOut[pointsOutNum++] = &polyg.m_first;
+			}
+			else {
+				tPointsIn[pointsInNum] = &polyg.m_tFirst;
+				pointsIn[pointsInNum++] = &polyg.m_first;
+			}
+			////////////////////////////////////////////////////////////////////////////////
+			if (isPointOutOfLineNew(polyg.m_second, i)) {
+				tPointsOut[pointsOutNum] = &polyg.m_tSecond;
+				pointsOut[pointsOutNum++] = &polyg.m_second;
+			}
+			else {
+				tPointsIn[pointsInNum] = &polyg.m_tSecond;
+				pointsIn[pointsInNum++] = &polyg.m_second;
+			}
+			////////////////////////////////////////////////////////////////////////////////
+			if (isPointOutOfLineNew(polyg.m_third, i)) {
+				tPointsOut[pointsOutNum] = &polyg.m_tThird;
+				pointsOut[pointsOutNum++] = &polyg.m_third;
+			}
+			else {
+				tPointsIn[pointsInNum] = &polyg.m_tThird;
+				pointsIn[pointsInNum++] = &polyg.m_third;
+			}
+			////////////////////////////////////////////////////////////////////////////////
+
+			if (pointsOutNum == 1) {
+				vgu::Vector4f* result1 = calculateCrossWithTwoLines(*pointsIn[0], *pointsOut[0], i);
+				vgu::Vector4f* result2 = calculateCrossWithTwoLines(*pointsIn[1], *pointsOut[0], i);
+
+				if (result1 && result2) {
+					vgu::Vector4f result1Form{ result1->coord.x, result1->coord.y, result1->coord.z, result1->coord.w };
+					vgu::Vector4f result2Form{ result2->coord.x, result2->coord.y, result2->coord.z, result2->coord.w };
+
+					delete result1;
+					delete result2;
+
+					vgu::Vector2f tRes1 = calculateTexturePoint(*pointsIn[0], *pointsOut[0], *tPointsIn[0], *tPointsOut[0], result1Form);
+					vgu::Vector2f tRes2 = calculateTexturePoint(*pointsIn[1], *pointsOut[0], *tPointsIn[1], *tPointsOut[0], result2Form);
+
+					Polygon3P newPolyg1{
+						result1Form,
+						*pointsIn[1],
+						*pointsIn[0],
+						tRes1,
+						*tPointsIn[1],
+						*tPointsIn[0],
+						polyg.m_normal,
+						polyg.texture
+					};
+
+					Polygon3P newPolyg2{
+						result1Form,
+						result2Form,
+						*pointsIn[1],
+						tRes1,
+						tRes2,
+						*tPointsIn[1],
+						polyg.m_normal,
+						polyg.texture
+					};
+
+					polygonsQueue.erase(polygonIter);
+					polygonsQueue.push_back(newPolyg1);
+					polygonsQueue.push_back(newPolyg2);
+				}
+			}
+
+			if (pointsOutNum == 2) {
+				vgu::Vector4f* result1 = calculateCrossWithTwoLines(*pointsIn[0], *pointsOut[0], i);
+				vgu::Vector4f* result2 = calculateCrossWithTwoLines(*pointsIn[0], *pointsOut[1], i);
+
+				if (result1 && result2) {
+					vgu::Vector4f result1Form{ result1->coord.x, result1->coord.y, result1->coord.z, result1->coord.w };
+					vgu::Vector4f result2Form{ result2->coord.x, result2->coord.y, result2->coord.z, result2->coord.w };
+
+					vgu::Vector2f tRes1 = calculateTexturePoint(*pointsIn[0], *pointsOut[0], *tPointsIn[0], *tPointsOut[0], result1Form);
+					vgu::Vector2f tRes2 = calculateTexturePoint(*pointsIn[0], *pointsOut[1], *tPointsIn[0], *tPointsOut[1], result2Form);
+
+					delete result1;
+					delete result2;
+
+					Polygon3P newPolyg{
+						result1Form,
+						result2Form,
+						*pointsIn[0],
+						tRes1,
+						tRes2,
+						*tPointsIn[0],
+						polyg.m_normal,
+						polyg.texture
+					};
+
+					polygonsQueue.erase(polygonIter);
+					polygonsQueue.push_back(newPolyg);
+				}
+			}
+
+			if (pointsOutNum == 3) {
+				polygonsQueue.erase(polygonIter);
 			}
 		}
 
-		polygonsQueue.assign(std::next(newQueue.begin(), 0), std::next(newQueue.end(), 0));
 	}
 
 	size = polygonsQueue.size();
