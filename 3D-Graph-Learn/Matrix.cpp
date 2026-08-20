@@ -84,7 +84,7 @@ const double& Matrix<M, N>::operator()(int&& mIndex, int&& nIndex) const {
 }
 
 template <unsigned int M, unsigned int N>
-Matrix<M, N>& vgu::operator+(Matrix<M, N> A, const Matrix<M, N>& B) {
+Matrix<M, N> vgu::operator+(Matrix<M, N> A, const Matrix<M, N>& B) {
 	int size = M * N;
 	for (int i = 0; i < size; ++i) {
 		A[i] += B[i];
@@ -93,7 +93,7 @@ Matrix<M, N>& vgu::operator+(Matrix<M, N> A, const Matrix<M, N>& B) {
 }
 
 template <unsigned int M, unsigned int N>
-Matrix<M, N>& vgu::operator-(Matrix<M, N> A, const Matrix<M, N>& B) {
+Matrix<M, N> vgu::operator-(Matrix<M, N> A, const Matrix<M, N>& B) {
 	int size = M * N;
 	for (int i = 0; i < size; ++i) {
 		A[i] -= B[i];
@@ -102,7 +102,7 @@ Matrix<M, N>& vgu::operator-(Matrix<M, N> A, const Matrix<M, N>& B) {
 }
 
 template <unsigned int M, unsigned int N>
-Matrix<M, N>& vgu::operator*(Matrix<M, N> mat, const double& value) {
+Matrix<M, N> vgu::operator*(Matrix<M, N> mat, const double& value) {
 	unsigned int size = M * N;
 	for (int i = 0; i < size; ++i) {
 		mat[i] *= value;
@@ -111,7 +111,7 @@ Matrix<M, N>& vgu::operator*(Matrix<M, N> mat, const double& value) {
 }
 
 template <unsigned int M, unsigned int N>
-Matrix<M, N>& vgu::operator*(const double& value, Matrix<M, N> mat) {
+Matrix<M, N> vgu::operator*(const double& value, Matrix<M, N> mat) {
 	unsigned int size = M * N;
 	for (int i = 0; i < size; ++i) {
 		mat[i] *= value;

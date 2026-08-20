@@ -10,16 +10,16 @@ namespace vgu {
 
 	// Operators prototypes
 	template <unsigned int M, unsigned int N>
-	Matrix<M, N>& operator+(Matrix<M, N> A, const Matrix<M, N>& B);
+	Matrix<M, N> operator+(Matrix<M, N> A, const Matrix<M, N>& B);
 
 	template <unsigned int M, unsigned int N>
-	Matrix<M, N>& operator-(Matrix<M, N> A, const Matrix<M, N>& B);
+	Matrix<M, N> operator-(Matrix<M, N> A, const Matrix<M, N>& B);
 
 	template <unsigned int M, unsigned int N>
-	Matrix<M, N>& operator*(Matrix<M, N> mat, const double& value);
+	Matrix<M, N> operator*(Matrix<M, N> mat, const double& value);
 
 	template <unsigned int M, unsigned int N>
-	Matrix<M, N>& operator*(const double& value, Matrix<M, N> mat);
+	Matrix<M, N> operator*(const double& value, Matrix<M, N> mat);
 
 	template <unsigned int M, unsigned int N>
 	Vector<N> operator*(const Vector<M>& vec, const Matrix<M, N>& mat);
@@ -56,10 +56,10 @@ namespace vgu {
 		double& operator()(int&& mIndex, int&& nIndex);
 		const double& operator()(const int& mIndex, const int& nIndex) const;
 		const double& operator()(int&& mIndex, int&& nIndex) const;
-		friend Matrix<M, N>& operator+ <> (Matrix<M, N> A, const Matrix<M, N>& B);
-		friend Matrix<M, N>& operator- <>(Matrix<M, N> A, const Matrix<M, N>& B);
-		friend Matrix<M, N>& operator* <>(Matrix<M, N> mat, const double& value);
-		friend Matrix<M, N>& operator* <>(const double& value, Matrix<M, N> mat);
+		friend Matrix<M, N> operator+ <> (Matrix<M, N> A, const Matrix<M, N>& B);
+		friend Matrix<M, N> operator- <>(Matrix<M, N> A, const Matrix<M, N>& B);
+		friend Matrix<M, N> operator* <>(Matrix<M, N> mat, const double& value);
+		friend Matrix<M, N> operator* <>(const double& value, Matrix<M, N> mat);
 		friend Vector<N> operator* <>(const Vector<M>& vec, const Matrix<M, N>& mat);
 		friend Vector<M> operator* <>(const Matrix<M, N>& mat, const Vector<N>& vec);
 		Matrix<N, N> operator-() const;

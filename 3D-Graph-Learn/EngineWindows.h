@@ -12,7 +12,6 @@
 
 #include "EngineBase.h"
 
-#pragma comment(lib, "Msimg32.lib")
 
 #define RGBA(r,g,b,a)          ((COLORREF)(((BYTE)(b)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(r))<<16)|(((DWORD)(BYTE)(a))<<24)))
 

@@ -134,11 +134,11 @@ void Engine3D::FillHalfTriangle(const Pixel& a, const Pixel& b, const double coe
 						if (textureY < 0) textureY = 0;
 						textureY = texture->GetHeight() - textureY - 1;
 						const long long textureIndex = 4 * (textureX + textureY * texture->GetWidth());
-						RGBAColor* color = (*texture)[textureIndex];
-						if (color) {
-							colorRed = color->b * lightIntensivity;
-							colorGreen = color->g * lightIntensivity;
-							colorBlue = color->r * lightIntensivity;
+						RGBAColor color;
+						if (texture->TryGetPixel(textureIndex, color)) {
+							colorRed = color.b * lightIntensivity;
+							colorGreen = color.g * lightIntensivity;
+							colorBlue = color.r * lightIntensivity;
 						}
 					}
 					SetPixel({ x, y, { colorRed, colorGreen, colorBlue, 255} });
@@ -394,8 +394,8 @@ vgu::Vector4f* calculateCrossWithFourLines(const vgu::Vector4f& first, const vgu
 }
 
 
-// TODO: Этот костыль позволяет определить о какой линии идёт речь, по-хорошему надо писать функцию для любой линии
-boolean isPointOutOfLine(const vgu::Vector4f& point, const Side& side) {
+// TODO: Clipping should also handle the near/far planes, not only the four screen sides
+bool isPointOutOfLine(const vgu::Vector4f& point, const Side& side) {
 	switch (side) {
 	case Side::TOP:
 		return point.coord.y > 1;
@@ -406,6 +406,7 @@ boolean isPointOutOfLine(const vgu::Vector4f& point, const Side& side) {
 	case Side::BOTTOM:
 		return point.coord.y < -1;
 	}
+	return false;
 }
 
 vgu::Vector2f calculateTexturePoint(const vgu::Vector4f& first, const vgu::Vector4f& second, const vgu::Vector2f& tFirst, const vgu::Vector2f& tSecond, const vgu::Vector4f& point) {
@@ -431,8 +432,10 @@ Polygon3P* clipPolyg(Polygon3P& polygon, int& size) {
 
 	for (size_t i = 0; i < 4; ++i) {
 		std::list<Polygon3P>::iterator polygonIter;
+		std::list<Polygon3P> newPolygons;
 
-		for (polygonIter = polygonsQueue.begin(); polygonIter != polygonsQueue.end(); ++polygonIter) {
+		for (polygonIter = polygonsQueue.begin(); polygonIter != polygonsQueue.end(); ) {
+			bool erased = false;
 			auto polyg = *polygonIter;
 			// Find all points in/out of the screen
 		    ////////////////////////////////////////////////////////////////////////////////
@@ -507,9 +510,10 @@ Polygon3P* clipPolyg(Polygon3P& polygon, int& size) {
 						polyg.texture
 					};
 
-					polygonsQueue.erase(polygonIter);
-					polygonsQueue.push_back(newPolyg1);
-					polygonsQueue.push_back(newPolyg2);
+					polygonIter = polygonsQueue.erase(polygonIter);
+					erased = true;
+					newPolygons.push_back(newPolyg1);
+					newPolygons.push_back(newPolyg2);
 				}
 			}
 
@@ -538,15 +542,19 @@ Polygon3P* clipPolyg(Polygon3P& polygon, int& size) {
 						polyg.texture
 					};
 
-					polygonsQueue.erase(polygonIter);
-					polygonsQueue.push_back(newPolyg);
+					polygonIter = polygonsQueue.erase(polygonIter);
+					erased = true;
+					newPolygons.push_back(newPolyg);
 				}
 			}
 
 			if (pointsOutNum == 3) {
-				polygonsQueue.erase(polygonIter);
+				polygonIter = polygonsQueue.erase(polygonIter);
+				erased = true;
 			}
+			if (!erased) ++polygonIter;
 		}
+		polygonsQueue.splice(polygonsQueue.end(), newPolygons);
 	}
 
 	size = polygonsQueue.size();
@@ -588,8 +596,10 @@ Polygon3P* clipPolygNew(Polygon3P& polygon, int& size) {
 
 	for (size_t i = 0; i < 4; ++i) {
 		std::list<Polygon3P>::iterator polygonIter;
+		std::list<Polygon3P> newPolygons;
 
-		for (polygonIter = polygonsQueue.begin(); polygonIter != polygonsQueue.end(); ++polygonIter) {
+		for (polygonIter = polygonsQueue.begin(); polygonIter != polygonsQueue.end(); ) {
+			bool erased = false;
 			auto polyg = *polygonIter;
 			// Find all points in/out of the screen
 			////////////////////////////////////////////////////////////////////////////////
@@ -664,9 +674,10 @@ Polygon3P* clipPolygNew(Polygon3P& polygon, int& size) {
 						polyg.texture
 					};
 
-					polygonsQueue.erase(polygonIter);
-					polygonsQueue.push_back(newPolyg1);
-					polygonsQueue.push_back(newPolyg2);
+					polygonIter = polygonsQueue.erase(polygonIter);
+					erased = true;
+					newPolygons.push_back(newPolyg1);
+					newPolygons.push_back(newPolyg2);
 				}
 			}
 
@@ -695,15 +706,19 @@ Polygon3P* clipPolygNew(Polygon3P& polygon, int& size) {
 						polyg.texture
 					};
 
-					polygonsQueue.erase(polygonIter);
-					polygonsQueue.push_back(newPolyg);
+					polygonIter = polygonsQueue.erase(polygonIter);
+					erased = true;
+					newPolygons.push_back(newPolyg);
 				}
 			}
 
 			if (pointsOutNum == 3) {
-				polygonsQueue.erase(polygonIter);
+				polygonIter = polygonsQueue.erase(polygonIter);
+				erased = true;
 			}
+			if (!erased) ++polygonIter;
 		}
+		polygonsQueue.splice(polygonsQueue.end(), newPolygons);
 
 	}
 

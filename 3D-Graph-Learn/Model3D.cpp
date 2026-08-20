@@ -10,7 +10,7 @@ Model3D::~Model3D() {
 }
 
 std::map<std::string, MtlData> Model3D::GetMtlData(const std::string& mtlPath) {
-	std::regex secReg("(.*\/)OBJ\/");
+	std::regex secReg("(.*/)OBJ/");
 	std::smatch result;
 	std::regex_search(mtlPath, result, secReg);
 	std::string folder = result[1].str() + "Textures";
@@ -70,7 +70,7 @@ std::map<std::string, MtlData> Model3D::GetMtlData(const std::string& mtlPath) {
 
 void Model3D::LoadModel(const std::string& filePath, TexturesFactory* texturesFactory) {
 	// TODO: Rewrite this with filesystem lib
-	const std::regex folderPathReg(".*\/");
+	const std::regex folderPathReg(".*/");
 	std::smatch folderPathMatch;
 	std::regex_search(filePath, folderPathMatch, folderPathReg);
 	const std::string folderPath = folderPathMatch[0].str();

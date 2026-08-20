@@ -38,31 +38,31 @@ const double& Vector<N>::operator[](int&& index) const {
 }
 
 template <unsigned char N>
-Vector<N>& vgu::operator+(Vector<N> A, const Vector<N>& B) {
+Vector<N> vgu::operator+(Vector<N> A, const Vector<N>& B) {
 	for (int i = 0; i < N; ++i) A[i] += B[i];
 	return A;
 }
 
 template <unsigned char N>
-Vector<N>& vgu::operator-(Vector<N> A, const Vector<N>& B) {
+Vector<N> vgu::operator-(Vector<N> A, const Vector<N>& B) {
 	for (int i = 0; i < N; ++i) A[i] -= B[i];
 	return A;
 }
 
 template <unsigned char N>
-Vector<N>& vgu::operator*(Vector<N> A, const double& value) {
+Vector<N> vgu::operator*(Vector<N> A, const double& value) {
 	for (int i = 0; i < N; ++i) A[i] *= value;
 	return A;
 }
 
 template <unsigned char N>
-Vector<N>& vgu::operator*(const double& value, Vector<N> A) {
+Vector<N> vgu::operator*(const double& value, Vector<N> A) {
 	for (int i = 0; i < N; ++i) A[i] *= value;
 	return A;
 }
 
 template <unsigned char N>
-Vector<N>& vgu::operator/(Vector<N> A, const double& value) {
+Vector<N> vgu::operator/(Vector<N> A, const double& value) {
 	for (int i = 0; i < N; ++i) A[i] /= value;
 	return A;
 }
@@ -112,7 +112,7 @@ Vector<N>& Vector<N>::operator/=(const double& value) {
 }
 
 template <unsigned char N>
-Vector<N>& Vector<N>::operator-() const {
+Vector<N> Vector<N>::operator-() const {
 	Vector<N> result;
 	for (int i = 0; i < N; ++i) {
 		result[i] = -m_coords[i];

@@ -56,7 +56,8 @@ protected:
 public:
 	Engine3D();
 	~Engine3D() override {
-		if (!m_zBuffer) delete[] m_zBuffer;
+		delete[] m_zBuffer;
+		m_zBuffer = nullptr;
 	}
 
 	// !!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!
@@ -205,6 +206,7 @@ public:
 		// TODO: Remove this, it is temporary solution just to see is everything working well
 		delete[] polygons;
 		delete[] m_zBuffer;
+		m_zBuffer = nullptr;
 	}
 };
 

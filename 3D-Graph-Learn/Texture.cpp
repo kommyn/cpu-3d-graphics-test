@@ -4,7 +4,7 @@ Texture::Texture(const std::string& filePath) {
 	m_pixels = stbi_load(filePath.c_str(), &m_width, &m_height, &m_channels, 4);
 	m_size = m_width * m_height;
 	// TODO: This is placeholder. I need to change this for something better
-	if (!m_pixels) throw std::exception("I am error");
+	if (!m_pixels) throw std::runtime_error("Texture: failed to load " + filePath);
 }
 
 Texture::~Texture() {
@@ -27,12 +27,8 @@ int Texture::GetSize() {
 	return m_size;
 }
 
-RGBAColor* Texture::operator[](const int& index) {
-	if (index >= 4 * m_size || index < 0) return NULL;
-	unsigned char red = m_pixels[index + 2];
-	unsigned char green = m_pixels[index + 1];
-	unsigned char blue = m_pixels[index];
-	unsigned char alpha = m_pixels[index + 3];
-	RGBAColor color = { red, green, blue, alpha };
-	return &color;
+bool Texture::TryGetPixel(long long index, RGBAColor& outColor) const {
+	if (index < 0 || index + 3 >= 4LL * m_size) return false;
+	outColor = { m_pixels[index + 2], m_pixels[index + 1], m_pixels[index], m_pixels[index + 3] };
+	return true;
 }

@@ -15,7 +15,6 @@
 #endif
 #include "stb_image.h"
 
-#pragma comment(lib, "Msimg32.lib")
 
 #define RGBA(r,g,b,a)          ((COLORREF)(((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16)|(((DWORD)(BYTE)(a))<<24)))
 

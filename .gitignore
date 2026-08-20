@@ -338,3 +338,14 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+# --- Правила этого проекта ---------------------------------------------------
+# Шаблон Visual Studio выше прячет *.obj и [Oo]bj/ — это правила для объектных
+# файлов компилятора. Здесь OBJ — формат 3D-моделей, то есть данные, а не
+# артефакты сборки, поэтому возвращаем их в репозиторий.
+!3D-Graph-Learn/models/**/OBJ/
+!3D-Graph-Learn/models/**/*.obj
+!3D-Graph-Learn/models/**/*.mtl
+
+# Исходники моделей, не нужные движку (он читает только OBJ)
+3D-Graph-Learn/models/**/Blender/
+3D-Graph-Learn/models/**/Autodesk FBX/

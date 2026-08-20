@@ -8,19 +8,19 @@ namespace vgu {
 
 	// Just a bunch of operator prototypes
 	template <unsigned char N>
-	Vector<N>& operator+(Vector<N> A, const Vector<N>& B);
+	Vector<N> operator+(Vector<N> A, const Vector<N>& B);
 
 	template <unsigned char N>
-	Vector<N>& operator-(Vector<N> A, const Vector<N>& B);
+	Vector<N> operator-(Vector<N> A, const Vector<N>& B);
 
 	template <unsigned char N>
-	Vector<N>& operator*(Vector<N> A, const double& value);
+	Vector<N> operator*(Vector<N> A, const double& value);
 
 	template <unsigned char N>
-	Vector<N>& operator*(const double& value, Vector<N> A);
+	Vector<N> operator*(const double& value, Vector<N> A);
 
 	template <unsigned char N>
-	Vector<N>& operator/(Vector<N> A, const double& value);
+	Vector<N> operator/(Vector<N> A, const double& value);
 
 	// It is coords template structure that are used for using in union of data with vectors of size 1, 2, 3, 4
 	template <unsigned int N>
@@ -68,16 +68,16 @@ namespace vgu {
 		const double& operator[](const int& index) const;
 		const double& operator[](int&& index) const;
 		Vector<N>& operator=(std::initializer_list<double> list);
-		friend Vector<N>& operator+ <>(Vector<N> A, const Vector<N>& B);
-		friend Vector<N>& operator- <>(Vector<N> A, const Vector<N>& B);
-		friend Vector<N>& operator* <>(Vector<N> A, const double& value);
-		friend Vector<N>& operator* <>(const double& value, Vector<N> A);
-		friend Vector<N>& operator/ <>(Vector<N> A, const double& value);
+		friend Vector<N> operator+ <>(Vector<N> A, const Vector<N>& B);
+		friend Vector<N> operator- <>(Vector<N> A, const Vector<N>& B);
+		friend Vector<N> operator* <>(Vector<N> A, const double& value);
+		friend Vector<N> operator* <>(const double& value, Vector<N> A);
+		friend Vector<N> operator/ <>(Vector<N> A, const double& value);
 		Vector<N>& operator+=(const Vector<N>& vector);
 		Vector<N>& operator-=(const Vector<N>& vector);
 		Vector<N>& operator*=(const double& value);
 		Vector<N>& operator/=(const double& value);
-		Vector<N>& operator-() const;
+		Vector<N> operator-() const;
 
 		double length() const;
 		void display() const;
