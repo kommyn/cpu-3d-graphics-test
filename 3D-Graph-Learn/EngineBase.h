@@ -5,7 +5,7 @@
 #include <chrono>
 
 // This const value is used for elapsed time calculation
-const float highResClockRatio = static_cast<float>(std::chrono::high_resolution_clock::period::num) / std::chrono::high_resolution_clock::period::den;
+const double highResClockRatio = static_cast<double>(std::chrono::high_resolution_clock::period::num) / std::chrono::high_resolution_clock::period::den;
 
 // This structure represents point on the screen
 struct Point {
@@ -45,7 +45,7 @@ enum class MouseButton {
 class EngineBase
 {
 protected:
-	float m_time;
+	double m_time;
 	float m_elapsedTime;
 public:
 	EngineBase();

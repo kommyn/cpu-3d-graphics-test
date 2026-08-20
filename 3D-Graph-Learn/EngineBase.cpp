@@ -6,7 +6,7 @@ EngineBase::EngineBase() {
 }
 
 void EngineBase::ComputeElapsedTime() {
-	const float time = highResClockRatio * std::chrono::high_resolution_clock::now().time_since_epoch().count();
-	m_elapsedTime = time - m_time;
+	const double time = highResClockRatio * std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	m_elapsedTime = static_cast<float>(time - m_time);
 	m_time = time;
 }
