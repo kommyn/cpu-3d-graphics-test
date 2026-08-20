@@ -130,7 +130,7 @@ void Engine3D::FillHalfTriangle(const Pixel& a, const Pixel& b, const double coe
 						long long textureY = coeffsT[3] * x + coeffsT[4] * y + coeffsT[5];
 						if (textureX >= texture->GetWidth()) textureX = static_cast<long long>(texture->GetWidth() + 0.5) - 1;
 						if (textureX < 0) textureX = 0;
-						if (textureY >= texture->GetHeight()) textureY = static_cast<long long>(texture->GetHeight() + 0,5) - 1;
+						if (textureY >= texture->GetHeight()) textureY = static_cast<long long>(texture->GetHeight() + 0.5) - 1;
 						if (textureY < 0) textureY = 0;
 						textureY = texture->GetHeight() - textureY - 1;
 						const long long textureIndex = 4 * (textureX + textureY * texture->GetWidth());
