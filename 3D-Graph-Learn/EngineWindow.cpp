@@ -1,4 +1,5 @@
 #include "EngineWindow.h"
+#include "AssetPath.h"
 
 EngineWindow::EngineWindow() {
 	m_hWnd = NULL;
@@ -356,8 +357,8 @@ void EngineWindow::OnUpdate(const float& elapsedTime, const float& time) {
 	FillTriangle(point3, point4, point1);
 	FillTriangle(point2, point3, point4);*/
 	//2048 * 1536
-	TexturedTriangle({ 0, 0 }, { 0, m_screenHeight }, { m_screenWidth, m_screenHeight }, "war.jpg", { 0, 0 }, { 0, 1535 }, { 2047, 1535 });
-	TexturedTriangle({ 0, 0 }, { m_screenWidth, m_screenHeight }, { m_screenWidth, 0 }, "war.jpg", { 0, 0 }, { 2047, 1535 }, { 2047, 0 });
+	TexturedTriangle({ 0, 0 }, { 0, m_screenHeight }, { m_screenWidth, m_screenHeight }, assetPath("war.jpg"), { 0, 0 }, { 0, 1535 }, { 2047, 1535 });
+	TexturedTriangle({ 0, 0 }, { m_screenWidth, m_screenHeight }, { m_screenWidth, 0 }, assetPath("war.jpg"), { 0, 0 }, { 2047, 1535 }, { 2047, 0 });
 
 	//DrawTriangle(point1, point2, point3);
 	//DrawTriangle(point3, point4, point1);

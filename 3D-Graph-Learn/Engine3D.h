@@ -12,6 +12,7 @@
 #include "Camera.h"
 #include "Model3D.h"
 #include "ModelsFactory.h"
+#include "AssetPath.h"
 
 
 // It is list of paths I use for testing
@@ -101,7 +102,7 @@ public:
 		
 		// It is an scratch of future 3D edngine pipleine
 		// TODO: Remove this, it is just a temporary solution
-		auto model = m_modelsFact.LoadModel("models/Izba/OBJ/Farmhouse OBJ.obj");
+		auto model = m_modelsFact.LoadModel(assetPath("models/Izba/OBJ/Farmhouse OBJ.obj"));
 
 		const size_t POLYGONS_NUM = model->GetPolygonsSize();
 		Polygon3P* polygons = model->GetPolygons();
